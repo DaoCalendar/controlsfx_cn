@@ -46,7 +46,7 @@ subprojects {
       fxsampler_name        = 'fxsampler'
       fxsampler_version     = cfg.fxsampler_specification_version + artifact_suffix
       fxsampler_mainClass   = 'org.controlsfx.fxsampler/fxsampler.FXSampler'
-      javafx_version        = '13'
+      javafx_version        = '15'
     }
 
     group = 'org.controlsfx'
@@ -63,19 +63,29 @@ subprojects {
         mavenCentral()
     }
 
+    javafx {
+        modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.swing' ]
+    }
+
     compileJava {
         options.encoding = "UTF-8"
         options.incremental = true
     }
 
     javadoc {
-        def javaVersion = JavaVersion.current().majorVersion
-        if (JavaVersion.current().java11Compatible) {
-            options.links("https://openjfx.io/javadoc/"+ javaVersion)
-            options.links("https://docs.oracle.com/en/java/javase/" + javaVersion + "/docs/api")
-        } else {
-            options.links("https://docs.oracle.com/javase/" + javaVersion + "/docs/api")
-        }
+//        def javaVersion = JavaVersion.current().majorVersion
+//        if (JavaVersion.current().java11Compatible) {
+//            options.links("https://openjfx.io/javadoc/"+ javaVersion)
+//            options.links("https://docs.oracle.com/en/java/javase/" + javaVersion + "/docs/api")
+//        } else {
+//            options.links("https://docs.oracle.com/javase/" + javaVersion + "/docs/api")
+//        }
+        options.addBooleanOption("Xdoclint:none").setValue(true);
+        options.addBooleanOption("javafx").setValue(true);
+    }
+
+    task wrapper(type: Wrapper) {
+        gradleVersion = '6.6'
     }
 
     task sourceJar(type: Jar) {

@@ -120,8 +120,9 @@ public class GridViewSkin<T> extends VirtualContainerBase<GridView<T>, GridRow<T
 
     @Override
     protected void updateItemCount() {
-        if (flow == null)
+        if (flow == null) {
             return;
+        }
 
         int oldCount = flow.getCellCount();
         int newCount = getItemCount();
