@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013, ControlsFX
+ * Copyright (c) 2018, 2020 ControlsFX
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,18 +24,29 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package impl.org.controlsfx.behavior;
+module org.controlsfx.samples {
 
-import java.util.Collections;
+    requires java.desktop;
+    requires org.controlsfx.controls;
+    requires org.controlsfx.fxsampler;
 
-import org.controlsfx.control.Rating;
-
-import com.sun.javafx.scene.control.behavior.BehaviorBase;
-import com.sun.javafx.scene.control.behavior.KeyBinding;
-
-public class RatingBehavior extends BehaviorBase<Rating> {
-
-    public RatingBehavior(Rating control) {
-        super(control, Collections.<KeyBinding> emptyList());
-    }
+    exports org.controlsfx.samples to javafx.graphics;
+    exports org.controlsfx.samples.actions to org.controlsfx.fxsampler;
+    exports org.controlsfx.samples.button to org.controlsfx.fxsampler;
+    exports org.controlsfx.samples.checked to org.controlsfx.fxsampler;
+    exports org.controlsfx.samples.dialogs to org.controlsfx.fxsampler;
+    exports org.controlsfx.samples.propertysheet to org.controlsfx.fxsampler;
+    exports org.controlsfx.samples.tablefilter to org.controlsfx.fxsampler;
+    exports org.controlsfx.samples.tableview to org.controlsfx.fxsampler;
+    exports org.controlsfx.samples.tableview2 to org.controlsfx.fxsampler;
+    exports org.controlsfx.samples.textfields to org.controlsfx.fxsampler;
+    exports org.controlsfx.samples.spreadsheet to org.controlsfx.fxsampler;
+    
+    opens org.controlsfx.samples;
+    opens org.controlsfx.samples.dialogs;
+    opens org.controlsfx.samples.actions to org.controlsfx.controls;
+    opens org.controlsfx.samples.tableview to javafx.base;
+    opens org.controlsfx.samples.spreadsheet to javafx.graphics;
+    
+    provides fxsampler.FXSamplerProject with org.controlsfx.ControlsFXSampler;
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015, 2020 ControlsFX
+ * Copyright (c) 2015, 2020, 2021, ControlsFX
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,7 +27,6 @@
 
 package impl.org.controlsfx.skin;
 
-import com.sun.javafx.css.converters.SizeConverter;
 import javafx.animation.Animation;
 import javafx.animation.TranslateTransition;
 import javafx.beans.property.DoubleProperty;
@@ -36,6 +35,7 @@ import javafx.css.CssMetaData;
 import javafx.css.Styleable;
 import javafx.css.StyleableDoubleProperty;
 import javafx.css.StyleableProperty;
+import javafx.css.converter.SizeConverter;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.SkinBase;
@@ -148,9 +148,9 @@ public class ToggleSwitchSkin extends SkinBase<ToggleSwitch>
         double thumbHeight = snapSize(thumb.prefHeight(-1));
         thumb.resize(thumbWidth, thumbHeight);
 
-        double thumbAreaY = snapPosition(contentY);
         double thumbAreaWidth = snapSize(thumbArea.prefWidth(-1));
         double thumbAreaHeight = snapSize(thumbArea.prefHeight(-1));
+        double thumbAreaY = snapPosition(contentY + (contentHeight / 2) - (thumbAreaHeight / 2));
 
         thumbArea.resize(thumbAreaWidth, thumbAreaHeight);
         thumbArea.setLayoutX(contentWidth - thumbAreaWidth);

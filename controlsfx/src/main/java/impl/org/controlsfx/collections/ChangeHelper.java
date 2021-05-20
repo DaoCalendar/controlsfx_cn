@@ -1,5 +1,5 @@
-/**
- * Copyright (c) 2019, ControlsFX
+/*
+ * Copyright (c) 2018, ControlsFX
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,55 +24,39 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package impl.org.controlsfx.collections;
 
-package org.controlsfx.control.action;
+import java.util.Arrays;
+import java.util.List;
 
-import javafx.scene.control.Button;
-import org.controlsfx.control.spreadsheet.JavaFXThreadingRule;
-import org.junit.Rule;
-import org.junit.Test;
-import de.sandec.jmemorybuddy.JMemoryBuddy;
+class ChangeHelper {
+    
+    static String addRemoveChangeToString(int from, int to, List<?> list, List<?> removed) {
+        
+        StringBuilder b = new StringBuilder();
 
-public class TestActionUtils {
-    @Rule
-    public JavaFXThreadingRule javafxRule = new JavaFXThreadingRule();
-
-    @Test
-    public void testConfiguringButtonTwice() {
-        Button button = new Button("button");
-        Action action = new Action("action");
-
-        ActionUtils.configureButton(action,button);
-        ActionUtils.unconfigureButton(button);
-        ActionUtils.configureButton(action,button);
-        ActionUtils.unconfigureButton(button);
+        if (removed.isEmpty()) {
+            b.append(list.subList(from, to));
+            b.append(" addition at ").append(from);
+        } else {
+            b.append(removed);
+            if (from == to) {
+                b.append(" removal at ").append(from);
+            } else {
+                b.append(" replaced by ");
+                b.append(list.subList(from, to));
+                b.append(" at ").append(from);
+            }
+        }
+        return b.toString();
     }
 
-    @Test
-    public void testActionIsCollectable() {
-        Button button = new Button("button");
-
-        JMemoryBuddy.memoryTest((checker) -> {
-            Action action = new Action("action");
-
-            ActionUtils.configureButton(action,button);
-            ActionUtils.unconfigureButton(button);
-
-            checker.assertCollectable(action);
-        });
+    static String permChangeToString(int[] permutation) {
+        return "permutation by " + Arrays.toString(permutation);
     }
 
-    @Test
-    public void testButtonIsCollectable() {
-        Action action = new Action("button");
-
-        JMemoryBuddy.memoryTest((checker) -> {
-            Button button = new Button("Ignore");
-
-            ActionUtils.configureButton(action,button);
-            ActionUtils.unconfigureButton(button);
-
-            checker.assertCollectable(button);
-        });
+    static String updateChangeToString(int from, int to) {
+        return "update at range [" + from + ", " + to + ")";
     }
 }
+

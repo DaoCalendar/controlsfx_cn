@@ -26,9 +26,10 @@
  */
 package impl.org.controlsfx.spreadsheet;
 
-import com.sun.javafx.collections.MappingChange;
-import com.sun.javafx.collections.NonIterableChange;
-import com.sun.javafx.scene.control.ReadOnlyUnbackedObservableList;
+import impl.org.controlsfx.collections.MappingChange;
+import impl.org.controlsfx.collections.MappingChange.Map;
+import impl.org.controlsfx.collections.NonIterableChange;
+import impl.org.controlsfx.collections.ReadOnlyUnbackedObservableList;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -311,6 +312,11 @@ public class TableViewSpanSelectionModel extends
         }
 
         old = posFinal;
+
+        // prevent NullPointerException in case that the selected cell is spanning multiple columns at the end of the row
+        if (posFinal.getTableColumn() == null) {
+            return;
+        }
 
         //If it's a click, we register everything.
         if (!key) {

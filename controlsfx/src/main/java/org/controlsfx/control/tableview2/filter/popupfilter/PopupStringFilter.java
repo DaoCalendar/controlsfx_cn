@@ -45,7 +45,7 @@ import java.util.List;
  *      {@link org.controlsfx.control.tableview2.FilteredTableView} items list.
  * @param <T> Type of the content to be filtered,
  *           which is similar to the type of cells contained in the 
- *      {@link org.controlsfx.control.tableview2.FilteredTableColumn}. Should be 
+ *      {@link FilteredTableColumn}. Should be
  *      a String or an Object, in case a {@link StringConverter} is provided.
 */
 public class PopupStringFilter<S, T> extends PopupFilter<S, T> {

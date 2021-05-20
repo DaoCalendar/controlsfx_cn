@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013, 2018 ControlsFX
+ * Copyright (c) 2013, 2020 ControlsFX
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,12 +26,6 @@
  */
 package impl.org.controlsfx.tableview2;
 
-import com.sun.javafx.scene.control.skin.VirtualFlow;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
 import javafx.beans.Observable;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -42,8 +36,15 @@ import javafx.scene.Node;
 import javafx.scene.control.IndexedCell;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.control.TableCell;
+import javafx.scene.control.skin.VirtualFlow;
 import javafx.scene.layout.Region;
 import org.controlsfx.control.tableview2.TableView2;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 final class TableView2VirtualFlow<T extends IndexedCell<?>> extends VirtualFlow<T> {
     
@@ -120,13 +121,6 @@ final class TableView2VirtualFlow<T extends IndexedCell<?>> extends VirtualFlow<
     }
 
     /** {@inheritDoc} */
-    @Override public void show(int index) {
-        super.show(index);
-        layoutTotal();
-        layoutFixedRows();
-    }
-
-    /** {@inheritDoc} */
     @Override public void scrollTo(int index) {
         //If we have some fixedRows, we check if the selected row is not below them
         if (! getCells().isEmpty() && ! tableView.getFixedRows().isEmpty()) {
@@ -144,8 +138,8 @@ final class TableView2VirtualFlow<T extends IndexedCell<?>> extends VirtualFlow<
     }
 
     /** {@inheritDoc} */
-    @Override public double adjustPixels(final double delta) {
-        final double returnValue = super.adjustPixels(delta);
+    @Override public double scrollPixels(final double delta) {
+        final double returnValue = super.scrollPixels(delta);
         adjusting = true;
         this.adjustedPixels.set(delta);
         
@@ -303,7 +297,7 @@ final class TableView2VirtualFlow<T extends IndexedCell<?>> extends VirtualFlow<
 		
         //We must have a cell in ViewPort because otherwise
         //we short-circuit the VirtualFlow.
-        if (! tableView.getFixedRows().isEmpty() && tableView.isRowFixingEnabled() && getFirstVisibleCellWithinViewPort() != null) {
+        if (! tableView.getFixedRows().isEmpty() && tableView.isRowFixingEnabled() && getFirstVisibleCellWithinViewport() != null) {
             sortRows();
             /**
              * What I do is just going after the VirtualFlow in order to ADD
@@ -319,7 +313,7 @@ final class TableView2VirtualFlow<T extends IndexedCell<?>> extends VirtualFlow<
             rows:
             for (int i = tableView.getFixedRows().size() - 1; i >= 0; i--) {
                 fixedRowIndex = tableView.getFixedRows().get(i);
-                T lastCell = getLastVisibleCellWithinViewPort();
+                T lastCell = getLastVisibleCellWithinViewport();
                 //If the fixed row is out of bounds
                 if (lastCell != null && fixedRowIndex > lastCell.getIndex()) {
                     if (row != null) {
@@ -355,11 +349,11 @@ final class TableView2VirtualFlow<T extends IndexedCell<?>> extends VirtualFlow<
                      * getAvailableCell is not added our cell to the ViewPort in some cases.
                      * So we need to instantiate it ourselves.
                      */
-                    row = getCreateCell().call(this);
+                    row = getCellFactory().call(this);
                     row.getProperties().put("newcell", null); //$NON-NLS-1$
                 	 
                     setCellIndex(row, fixedRowIndex);
-                    resizeCellSize(row);
+                    resizeCell(row);
                     myFixedCells.add(row);
                 }
                 

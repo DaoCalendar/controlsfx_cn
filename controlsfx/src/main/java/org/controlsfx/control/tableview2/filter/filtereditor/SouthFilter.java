@@ -26,32 +26,32 @@
  */
 package org.controlsfx.control.tableview2.filter.filtereditor;
 
-import javafx.beans.Observable;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.scene.layout.HBox;
-import org.controlsfx.control.tableview2.FilteredTableColumn;
 import impl.org.controlsfx.tableview2.filter.filtermenubutton.DefaultFilterMenuButtonFactory;
 import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.WeakInvalidationListener;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import org.controlsfx.control.tableview2.FilteredTableColumn;
 import org.controlsfx.control.tableview2.filter.filtermenubutton.FilterMenuButton;
 
 /**
  * A container that can be placed in the south node of a 
- * {@link org.controlsfx.control.tableview2.FilteredTableColumn}. Includes a 
+ * {@link FilteredTableColumn}. Includes a
  * {@link FilterEditor} allowing filtering the column by adding text to it or
  * by selecting an item from the popup list.
- * 
+ *
  * It also includes a MenuButton that when displayed shows possible operators
  * that will be applied to perform the search
- * 
+ *
  * See {@link org.controlsfx.control.tableview2.TableColumn2#southNodeProperty() }
  *
- * @param <S> Type of the objects contained within the 
+ * @param <S> Type of the objects contained within the
  *      {@link org.controlsfx.control.tableview2.FilteredTableView} items list.
  * @param <T> Type of the content to be filtered,
- *           which is similar to the type of cells contained in the 
- *      {@link org.controlsfx.control.tableview2.FilteredTableColumn}.
+ *           which is similar to the type of cells contained in the
+ *      {@link FilteredTableColumn}.
  */
 public class SouthFilter<S, T> extends HBox {
     

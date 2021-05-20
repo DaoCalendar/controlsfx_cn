@@ -29,6 +29,7 @@ package org.controlsfx.control.tableview2.filter.filtereditor;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
+import javafx.beans.WeakInvalidationListener;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.WeakChangeListener;
 import javafx.collections.FXCollections;
@@ -37,13 +38,12 @@ import javafx.collections.ObservableList;
 import javafx.collections.WeakListChangeListener;
 import javafx.css.PseudoClass;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.TableView;
 import javafx.scene.control.Tooltip;
 import org.controlsfx.control.tableview2.FilteredTableColumn;
 import org.controlsfx.control.tableview2.filter.filtermenubutton.FilterMenuButton;
 
 import java.util.function.Predicate;
-import javafx.beans.WeakInvalidationListener;
-import javafx.scene.control.TableView;
 
 /**
  * The FilterEditor allows filtering the column by adding text to its editor or
@@ -53,7 +53,7 @@ import javafx.scene.control.TableView;
  *      {@link org.controlsfx.control.tableview2.FilteredTableView} items list.
  * @param <T> Type of the content to be filtered,
  *           which is similar to the type of cells contained in the 
- *      {@link org.controlsfx.control.tableview2.FilteredTableColumn}.
+ *      {@link FilteredTableColumn}.
  */
 public class FilterEditor<S, T> extends ComboBox<T> {
 

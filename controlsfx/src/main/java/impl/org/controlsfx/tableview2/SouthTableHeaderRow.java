@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013, 2018 ControlsFX
+ * Copyright (c) 2013, 2020 ControlsFX
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,7 +26,6 @@
  */
 package impl.org.controlsfx.tableview2;
 
-import java.util.stream.Collectors;
 import javafx.beans.InvalidationListener;
 import javafx.beans.WeakInvalidationListener;
 import javafx.collections.FXCollections;
@@ -38,31 +37,33 @@ import javafx.scene.control.TableColumnBase;
 import javafx.scene.layout.Region;
 import org.controlsfx.control.tableview2.TableView2;
 
+import java.util.stream.Collectors;
+
 public class SouthTableHeaderRow extends Region {
 
     public static final String SOUTH_HEADER_STYLE = "south";
-    
+
     private final TableView2Skin<?> skin;
     private final TableView2<?> control;
     private ObservableList<SouthTableColumnHeader> southColumnHeaders;
 
     private SouthTableHeaderRow parentSouthHeader;
-    
+
     public SouthTableHeaderRow(TableView2Skin<?> skin) {
         this.skin = skin;
         control = (TableView2<?>) skin.getSkinnable();
         getStyleClass().setAll("column-header-background", "south-header");
         init();
     }
-    
+
     private void init() {
         // listen to table width to keep header in sync
         updateSouthHeaders();
-        skin.getVisibleLeafColumns().addListener(weakTableColumnsListener);
-        skin.getColumns().addListener(weakTableColumnsListener);
+        control.getVisibleLeafColumns().addListener(weakTableColumnsListener);
+        control.getColumns().addListener(weakTableColumnsListener);
         control.southHeaderBlendedProperty().addListener(weakSouthHeaderBlendedListener);
         updateSouthHeaderRowStyle();
-        
+
         if (control.getParent() != null && control.getParent() instanceof RowHeader) {
             parentSouthHeader = ((TableView2Skin) ((RowHeader) control.getParent()).getParentTableView().getSkin()).getSouthHeader();
         }
@@ -98,18 +99,18 @@ public class SouthTableHeaderRow extends Region {
         }
         return southColumnHeaders;
     }
-    
+
     public SouthTableColumnHeader getSouthColumnHeaderFor(final TableColumnBase<?,?> col) {
         if (col == null) {
             return null;
         }
-        
+
         return getSouthColumnHeaders().stream()
                 .filter(header -> header.getTableColumn().equals(col))
                 .findFirst()
                 .orElse(null);
     }
-    
+
     /***************************************************************************
      * Protected methods                                                       *
      **************************************************************************/
@@ -121,7 +122,7 @@ public class SouthTableHeaderRow extends Region {
         double h = getHeight() - snappedTopInset() - snappedBottomInset();
         double fixedColumnWidth = 0;
         double hbarValue = skin.getHBar().getValue();
-                
+
         for (int i = 0, max = getSouthColumnHeaders().size(); i < max; i++) {
             SouthTableColumnHeader n = getSouthColumnHeaders().get(i);
             if (! n.isVisible()) continue;
@@ -149,7 +150,7 @@ public class SouthTableHeaderRow extends Region {
     protected void updateScrollX() {
         requestLayout();
     }
-    
+
     /***************************************************************************
      * Private Implementation                                                  *
      **************************************************************************/
@@ -161,7 +162,7 @@ public class SouthTableHeaderRow extends Region {
                 .collect(Collectors.toList()));
         getChildren().setAll(getSouthColumnHeaders());
     }
-    
+
     private void updateSouthHeaderRowStyle() {
         if (control.isSouthHeaderBlended() && ! getStyleClass().contains(SOUTH_HEADER_STYLE)) {
             getStyleClass().add(SOUTH_HEADER_STYLE);
@@ -169,7 +170,7 @@ public class SouthTableHeaderRow extends Region {
             getStyleClass().remove(SOUTH_HEADER_STYLE);
         }
     }
-    
+
     /** {@inheritDoc} */
     @Override protected double computePrefHeight(double width) {
         double height = getSouthColumnHeaders().stream()
@@ -186,5 +187,5 @@ public class SouthTableHeaderRow extends Region {
         }
         return height + snappedTopInset() + snappedBottomInset();
     }
-    
+
 }

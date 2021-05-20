@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013, 2018 ControlsFX
+ * Copyright (c) 2013, 2020 ControlsFX
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,10 +27,6 @@
 package org.controlsfx.control.tableview2;
 
 import impl.org.controlsfx.tableview2.FilteredColumnPredicate;
-import java.util.Objects;
-import java.util.function.Predicate;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ObjectPropertyBase;
 import javafx.beans.property.ReadOnlyObjectProperty;
@@ -48,30 +44,35 @@ import org.controlsfx.control.tableview2.filter.filtereditor.FilterEditor;
 import org.controlsfx.control.tableview2.filter.filtereditor.SouthFilter;
 import org.controlsfx.control.tableview2.filter.popupfilter.PopupFilter;
 
+import java.util.Objects;
+import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * A subclass of {@link TableView2} that provides extended filtering options.
  * 
  * The table items have to be wrapped with a {@link FilteredList}.
  * 
- * {@link #configureForFiltering(org.controlsfx.control.tableview2.FilteredTableView, javafx.collections.ObservableList) configureForFiltering}
+ * {@link #configureForFiltering(FilteredTableView, ObservableList) configureForFiltering}
  * is a convenient method that can be used for that purpose.
- * 
+ *
  * <h3>Features</h3>
  * <br>
  * A filter icon is displayed in the column's header, and its color will show if
- * the column has a predicate applied or not. 
- * 
+ * the column has a predicate applied or not.
+ *
  * <br>
- * A {@link PopupFilter} control can be used to display filtering options. This 
- * control can be displayed via {@link FilteredTableColumn#onFilterAction}.  
- * 
- * <br>Alternatively, a {@link SouthFilter} control can be placed in the south 
+ * A {@link PopupFilter} control can be used to display filtering options. This
+ * control can be displayed via {@link FilteredTableColumn#onFilterAction}.
+ *
+ * <br>Alternatively, a {@link SouthFilter} control can be placed in the south
  * header node.
- * 
+ *
  * <h2>Sample</h2>
- * 
- * <p>Let's provide the underlying data model, based on a <code>Person</code> class. 
- * 
+ *
+ * <p>Let's provide the underlying data model, based on a <code>Person</code> class.
+ *
  * <pre>
  * {@code
  * public class Person {
@@ -91,11 +92,11 @@ import org.controlsfx.control.tableview2.filter.popupfilter.PopupFilter;
  *         return lastName;
  *     }
  * }}</pre>
- * 
+ *
  * <p>A FilteredTableView can be created, and filled with an observable list of people,
  * that has to be wrapped with a SortedList and a FilteredList, in order to apply
  * sorting and filtering:
- * 
+ *
  * <pre>
  * {@code
  * FilteredTableView<Person> table = new FilteredTableView<Person>();
@@ -106,19 +107,19 @@ import org.controlsfx.control.tableview2.filter.popupfilter.PopupFilter;
  * sortedPeople.comparatorProperty().bind(table.comparatorProperty());
  * table.setItems(sortedPeople);
  * }</pre>
- * 
- * <p>Alternatively, {@link #configureForFiltering(org.controlsfx.control.tableview2.FilteredTableView, javafx.collections.ObservableList) configureForFiltering}
+ *
+ * <p>Alternatively, {@link #configureForFiltering(FilteredTableView, ObservableList) configureForFiltering}
  * can be used:
- * 
+ *
  * <pre>
  * {@code
  * FilteredTableView<Person> table = new FilteredTableView<Person>();
  * ObservableList<Person> people = getPeople();
  * FilteredTableView.configureForFiltering(table, people);
  * }</pre>
- * 
+ *
  * <p>Now we add two {@link FilteredTableColumn columns} to the table:
- * 
+ *
  * <pre>
  * {@code
  * FilteredTableColumn<Person,String> firstNameCol = new FilteredTableColumn<>("First Name");
@@ -129,22 +130,22 @@ import org.controlsfx.control.tableview2.filter.popupfilter.PopupFilter;
  * table.getColumns().setAll(firstNameCol, lastNameCol);}</pre>
  *
  * <p>A cell factory that allows commit on focus lost can be set:
- * 
+ *
  * <pre>
  * {@code
  * firstName.setCellFactory(TextField2TableCell.forTableColumn());}</pre>
  *
  * <p>We can fix some row and columns, and also show the row header:
- * 
+ *
  * <pre>
  * {@code
  * table.getFixedColumns().setAll(firstNameColumn);
  * table.getFixedRows().setAll(0, 1, 2);
  *
  * table.setRowHeaderVisible(true);}</pre>
- * 
+ *
  * <p>A popup filter editor can be easily added to a column header:
- * 
+ *
  * <pre>
  * {@code
  * PopupFilter<Person, String> popupFirstNameFilter = new PopupStringFilter<>(firstName);
@@ -152,33 +153,33 @@ import org.controlsfx.control.tableview2.filter.popupfilter.PopupFilter;
  * </pre>
  *
  * <p>Alternatively, a south filter editor can be added to the south node:
- * 
+ *
  * <pre>
  * {@code
  * SouthFilter<Person, String> editorFirstNameFilter = new SouthFilter<>(firstName, String.class);
  * firstName.setSouthNode(editorFirstNameFilter);}
  * </pre>
- * 
+ *
  * @param <S> The type of the objects contained within the FilteredTableView items list.
  */
 public class FilteredTableView<S> extends TableView2<S> {
-    
+
     /***************************************************************************
      * * Private Fields * *
      **************************************************************************/
-    
+
     /**
      * Original observable list, before it is wrapped into a FilteredList and SortedList.
-     * It is required to track the changes in the underlying data model (backend, 
+     * It is required to track the changes in the underlying data model (backend,
      * or cell-editing)
      */
     private ObservableList<S> backingList;
-    
+
     /**
      * The default {@link #filterPolicyProperty() filter policy} that this FilteredTableView
      * will use if no other policy is specified. The filter policy is a simple
      * {@link Callback} that accepts a FilteredTableView as the sole argument and expects
-     * a Boolean response representing whether the filter succeeded (true) or not 
+     * a Boolean response representing whether the filter succeeded (true) or not
      * (false).
      */
     public static final Callback<FilteredTableView, Boolean> DEFAULT_FILTER_POLICY = table -> {
@@ -224,7 +225,7 @@ public class FilteredTableView<S> extends TableView2<S> {
             return false;
         }
     };
-    
+
     /***************************************************************************
      * * Constructor * *
      **************************************************************************/
@@ -236,22 +237,22 @@ public class FilteredTableView<S> extends TableView2<S> {
     public FilteredTableView() {
         super();
     }
-    
+
     public FilteredTableView(ObservableList<S> items) {
         super(items);
         backingList = items;
     }
-    
+
     /***************************************************************************
      * * Public static Methods * *
      **************************************************************************/
 
     /**
-     * Convenient method to set the items for the {@link FilteredTableView} 
+     * Convenient method to set the items for the {@link FilteredTableView}
      * by wrapping them with a {@link FilteredList} and a {@link SortedList}, that
-     * are also bound properly to the table's {@link #predicateProperty() } and 
+     * are also bound properly to the table's {@link #predicateProperty() } and
      * {@link TableView#comparatorProperty()}.
-     * 
+     *
      * @param <S> The type of the objects contained within the FilteredTableView items list
      * @param tableView The FilteredTableView
      * @param items The {@link ObservableList items list}
@@ -264,22 +265,22 @@ public class FilteredTableView<S> extends TableView2<S> {
         sortedData.comparatorProperty().bind(tableView.comparatorProperty());
         tableView.setItems(sortedData);
     }
-    
-    
+
+
     /***************************************************************************
      * * Public Methods * *
      **************************************************************************/
 
     /**
-     * Sets the original observable list, before it is wrapped into a 
+     * Sets the original observable list, before it is wrapped into a
      * {@link FilteredList} and a {@link SortedList}.
-     * 
-     * It is required to track the changes in the underlying data model (back-end, 
+     *
+     * It is required to track the changes in the underlying data model (back-end,
      * or cell editing)
+     *
+     * @see #configureForFiltering(FilteredTableView, ObservableList)
      * 
-     * @see #configureForFiltering(org.controlsfx.control.tableview2.FilteredTableView, javafx.collections.ObservableList) 
-     * 
-     * @param backingList The original {@link ObservableList} 
+     * @param backingList The original {@link ObservableList}
      */
     public void setBackingList(ObservableList<S> backingList) {
         this.backingList = backingList;
@@ -408,7 +409,7 @@ public class FilteredTableView<S> extends TableView2<S> {
      * often than not it is not necessary to call this method directly, as it is
      * automatically called when the 
      * {@link #filterPolicyProperty() filter policy}, or the state of the
-     * FilteredTableColumn {@link org.controlsfx.control.tableview2.FilteredTableColumn#predicateProperty() filter predicate}
+     * FilteredTableColumn {@link FilteredTableColumn#predicateProperty() filter predicate}
      * changes. In other words, this method should only be called directly when
      * something external changes and a filter is required.
      */
@@ -452,7 +453,7 @@ public class FilteredTableView<S> extends TableView2<S> {
      * Returns the original observable list, before it is wrapped into a 
      * {@link FilteredList} and a {@link SortedList}.
      *
-     * @return The original {@link ObservableList} 
+     * @return The original {@link ObservableList}
      */
     ObservableList<S> getBackingList() {
         return backingList;

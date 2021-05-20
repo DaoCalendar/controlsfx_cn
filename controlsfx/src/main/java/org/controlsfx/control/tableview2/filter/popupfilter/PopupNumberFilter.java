@@ -39,8 +39,8 @@ import java.util.List;
  *      {@link org.controlsfx.control.tableview2.FilteredTableView} items list.
  * @param <T> Type of the content to be filtered,
  *           which is similar to the type of cells contained in the 
- *      {@link org.controlsfx.control.tableview2.FilteredTableColumn}. Should 
- *       extend {@link java.lang.Number}.
+ *      {@link FilteredTableColumn}. Should
+ *       extend {@link Number}.
  */
 public class PopupNumberFilter<S, T extends Number> extends PopupFilter<S, T> {
 

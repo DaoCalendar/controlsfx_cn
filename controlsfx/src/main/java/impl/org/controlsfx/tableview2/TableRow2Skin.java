@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013, 2018 ControlsFX
+ * Copyright (c) 2013, 2020 ControlsFX
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,18 +26,6 @@
  */
 package impl.org.controlsfx.tableview2;
 
-import com.sun.javafx.scene.control.behavior.CellBehaviorBase;
-import com.sun.javafx.scene.control.behavior.TableRowBehavior;
-import com.sun.javafx.scene.control.skin.CellSkinBase;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.BiFunction;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
 import javafx.scene.Node;
@@ -47,11 +35,22 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumnBase;
 import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableRow;
+import javafx.scene.control.skin.CellSkinBase;
 import javafx.scene.layout.Pane;
 import javafx.util.Callback;
 import org.controlsfx.control.tableview2.TableView2;
 
-public class TableRow2Skin<S> extends CellSkinBase<TableRow<S>, CellBehaviorBase<TableRow<S>>> {
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.BiFunction;
+
+public class TableRow2Skin<S> extends CellSkinBase<TableRow<S>> {
 
     private static final PseudoClass SELECTED = PseudoClass.getPseudoClass("selected");
     private static final PseudoClass LEFT_CELL = PseudoClass.getPseudoClass("left");
@@ -69,28 +68,13 @@ public class TableRow2Skin<S> extends CellSkinBase<TableRow<S>, CellBehaviorBase
     private final TableView2<S> parentTableView;
     
     public TableRow2Skin(TableView2<S> tableView, TableRow<S> tableRow) {
-        super(tableRow, new TableRowBehavior<>(tableRow));
+        super(tableRow);
         this.tableView = tableView;
         
         getSkinnable().setPickOnBounds(false);
 
-        registerChangeListener(tableRow.itemProperty(), "ITEM");
-        registerChangeListener(tableRow.indexProperty(), "INDEX");
-        
-        if (tableView.getParent() != null && tableView.getParent() instanceof RowHeader) {
-            parentTableView = ((RowHeader) tableView.getParent()).getParentTableView();
-            this.skin = (TableView2Skin<S>) parentTableView.getSkin();
-        } else {
-            parentTableView = null;
-            this.skin = (TableView2Skin<S>) tableView.getSkin();
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override protected void handleControlPropertyChanged(String p) {
-        super.handleControlPropertyChanged(p);
-
-        if ("INDEX".equals(p)) {
+        registerChangeListener(tableRow.itemProperty(), t -> requestCellUpdate());
+        registerChangeListener(tableRow.indexProperty(), t -> {
             // Fix for JDK-8095357, where empty table cells were showing content, as they
             // had incorrect table cell indices (but the table row index was correct).
             // Note that we only do the update on empty cells to avoid the issue
@@ -98,8 +82,14 @@ public class TableRow2Skin<S> extends CellSkinBase<TableRow<S>, CellBehaviorBase
             if (getSkinnable().isEmpty()) {
                 requestCellUpdate();
             }
-        } else if ("ITEM".equals(p)) {
-            requestCellUpdate();
+        });
+        
+        if (tableView.getParent() != null && tableView.getParent() instanceof RowHeader) {
+            parentTableView = ((RowHeader) tableView.getParent()).getParentTableView();
+            this.skin = (TableView2Skin<S>) parentTableView.getSkin();
+        } else {
+            parentTableView = null;
+            this.skin = (TableView2Skin<S>) tableView.getSkin();
         }
     }
 

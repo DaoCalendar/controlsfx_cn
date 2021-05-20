@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013, 2018 ControlsFX
+ * Copyright (c) 2013, 2020 ControlsFX
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,19 +26,14 @@
  */
 package impl.org.controlsfx.tableview2;
 
-import java.lang.reflect.Field;
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -46,45 +41,38 @@ import javafx.collections.ObservableMap;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
 import javafx.event.EventHandler;
+import javafx.event.WeakEventHandler;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
-import javafx.scene.Node;
 import javafx.scene.control.IndexedCell;
-import javafx.scene.control.ResizeFeaturesBase;
+import javafx.scene.control.ScrollBar;
+import javafx.scene.control.SortEvent;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableFocusModel;
+import javafx.scene.control.TablePosition;
 import javafx.scene.control.TablePositionBase;
 import javafx.scene.control.TableRow;
-import javafx.scene.control.TableSelectionModel;
 import javafx.scene.control.TableView;
+import javafx.scene.control.skin.TableHeaderRow;
+import javafx.scene.control.skin.TableViewSkinBase;
+import javafx.scene.control.skin.VirtualFlow;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Region;
-import javafx.util.Callback;
-
-import com.sun.javafx.scene.control.behavior.TableViewBehavior;
-import com.sun.javafx.scene.control.skin.NestedTableColumnHeader;
-import com.sun.javafx.scene.control.skin.TableColumnHeader;
-import com.sun.javafx.scene.control.skin.TableHeaderRow;
-import com.sun.javafx.scene.control.skin.TableViewSkinBase;
-import com.sun.javafx.scene.control.skin.VirtualFlow;
-import com.sun.javafx.scene.text.TextLayout;
-import com.sun.javafx.tk.Toolkit;
-import static impl.org.controlsfx.tableview2.SortUtils.SortEndedEvent.SORT_ENDED_EVENT;
-import java.util.ArrayList;
-import java.util.stream.Collectors;
-import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.event.WeakEventHandler;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollBar;
-import javafx.scene.control.SortEvent;
-import javafx.scene.control.TablePosition;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.transform.Translate;
 import org.controlsfx.control.tableview2.TableView2;
+
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static impl.org.controlsfx.tableview2.SortUtils.SortEndedEvent.SORT_ENDED_EVENT;
 
 /**
  * This skin for the TableView2 control
@@ -95,7 +83,7 @@ import org.controlsfx.control.tableview2.TableView2;
  *
  * @param <S> The type of the objects contained within the {@link TableView2} items list.
  */
-public class TableView2Skin<S> extends TableViewSkinBase<S,S,TableView<S>,TableViewBehavior<S>,TableRow<S>,TableColumn<S,?>> {
+public class TableView2Skin<S> extends TableViewSkinBase<S,S, TableView<S>, TableRow<S>, TableColumn<S,?>> {
         
     /***************************************************************************
      * * STATIC FIELDS * *
@@ -106,14 +94,14 @@ public class TableView2Skin<S> extends TableViewSkinBase<S,S,TableView<S>,TableV
 
     static {
         double cell_size = 24.0;
-        try {
-            Class<?> clazz = com.sun.javafx.scene.control.skin.CellSkinBase.class;
-            Field f = clazz.getDeclaredField("DEFAULT_CELL_SIZE"); //$NON-NLS-1$
-            f.setAccessible(true);
-            cell_size = f.getDouble(null);
-        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            Class<?> clazz = javafx.scene.control.skin.CellSkinBase.class;
+//            Field f = clazz.getDeclaredField("DEFAULT_CELL_SIZE"); //$NON-NLS-1$
+//            f.setAccessible(true);
+//            cell_size = f.getDouble(null);
+//        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+//            e.printStackTrace();
+//        }
         DEFAULT_CELL_HEIGHT = cell_size;
     }
 
@@ -202,6 +190,8 @@ public class TableView2Skin<S> extends TableViewSkinBase<S,S,TableView<S>,TableV
     private final List<Integer> oldSelectedColumns = new ArrayList<>();
     private final List<Integer> oldSelectedRows = new ArrayList<>();
     
+    private final VirtualFlow<TableRow<S>> flow;
+    
     /***************************************************************************
      * * CONSTRUCTOR * *
      **************************************************************************/
@@ -211,9 +201,10 @@ public class TableView2Skin<S> extends TableViewSkinBase<S,S,TableView<S>,TableV
      * @param tableView the {@link TableView2}
      */
     public TableView2Skin(TableView2<S> tableView) {
-        super(tableView, new TableViewBehavior(tableView));
-        super.init(tableView);
+        super(tableView);
         
+        this.flow = getVirtualFlow();
+        flow.setCellFactory(p -> createCell());
         this.tableView = tableView;
         
         if (tableView.getParent() != null && tableView.getParent() instanceof RowHeader) {
@@ -264,34 +255,18 @@ public class TableView2Skin<S> extends TableViewSkinBase<S,S,TableView<S>,TableV
         getFlow().getVerticalBar().addEventFilter(MouseEvent.MOUSE_PRESSED, ml);
         getFlow().getHorizontalBar().addEventFilter(MouseEvent.MOUSE_PRESSED, ml);
 
-        // init the behavior 'closures'
-        TableViewBehavior<S> behavior = getBehavior();
-        behavior.setOnFocusPreviousRow(this::onFocusPreviousCell);
-        behavior.setOnFocusNextRow(this::onFocusNextCell);
-        behavior.setOnMoveToFirstCell(this::onMoveToFirstCell);
-        behavior.setOnMoveToLastCell(this::onMoveToLastCell);
-        behavior.setOnScrollPageDown(this::onScrollPageDown);
-        behavior.setOnScrollPageUp(this::onScrollPageUp);
-        behavior.setOnSelectPreviousRow(this::onSelectPreviousCell);
-        behavior.setOnSelectNextRow(this::onSelectNextCell);
-        behavior.setOnSelectLeftCell(this::onSelectLeftCell);
-        behavior.setOnSelectRightCell(this::onSelectRightCell);
-
-        registerChangeListener(tableView.fixedCellSizeProperty(), "FIXING");
-        registerChangeListener(tableView.columnFixingEnabledProperty(), "FIXING");
-    }
-
-    /** {@inheritDoc} */
-    @Override protected void handleControlPropertyChanged(String p) {
-        super.handleControlPropertyChanged(p);
-
-        if ("FIXING".equals(p)) {
+        registerChangeListener(tableView.fixedCellSizeProperty(), t -> {
             tableView.refresh();
             verticalScroll();
             computeFixedRowHeight();
-        }
+        });
+        registerChangeListener(tableView.columnFixingEnabledProperty(), t -> {
+            tableView.refresh();
+            verticalScroll();
+            computeFixedRowHeight();
+        });
     }
-    
+
     /**
      * Compute the height of a particular row. 
      * 
@@ -362,7 +337,7 @@ public class TableView2Skin<S> extends TableViewSkinBase<S,S,TableView<S>,TableV
      * one showing. Otherwise, it means another cell above will be the one
      * drawn.
      *
-     * @param pos the {@link TablePositionBase} 
+     * @param pos the {@link TablePositionBase}
      * @param index the index
      * @return the index of the first row
      */
@@ -422,112 +397,112 @@ public class TableView2Skin<S> extends TableViewSkinBase<S,S,TableView<S>,TableV
         return getFlow().getVerticalBar();
     }
 
-    /**
-     * 
-     * @param tc the {@link TableColumn}
-     * @param maxRows the maximum number of rows
-     */
-    @Override
-    public void resizeColumnToFitContent(TableColumn<S, ?> tc, int maxRows) {
-        if (tc == null || ! tc.isResizable() || getTableHeaderRow().getColumnHeaderFor(tc) instanceof NestedTableColumnHeader) {
-            return;
-        }
-        
-        final TableColumn<S, ?> col = tc;
-        List<?> items = itemsProperty().get();
-        if (items == null || items.isEmpty()) {
-            return;
-        }
-
-        Callback/* <TableColumn<T, ?>, TableCell<T,?>> */ cellFactory = col.getCellFactory();
-        if (cellFactory == null) {
-            return;
-        }
-
-        TableCell cell = (TableCell<S, ?>) cellFactory.call(col);
-        if (cell == null) {
-            return;
-        }
-
-        //The current index of that column
-        int indexColumn = tableView.getColumns().indexOf(tc);
-        
-        // set this property to tell the TableCell we want to know its actual
-        // preferred width, not the width of the associated TableColumnBase
-        cell.getProperties().put("deferToParentPrefWidth", Boolean.TRUE); //$NON-NLS-1$
-        
-        // determine cell padding
-        double padding = 10;
-        Node n = cell.getSkin() == null ? null : cell.getSkin().getNode();
-        if (n instanceof Region) {
-            Region r = (Region) n;
-            padding = r.snappedLeftInset() + r.snappedRightInset();
-        }
-
-        /**
-         * If maxRows is -1, we take all rows. If it's 30, it means it's coming
-         * from TableColumnHeader during initialization, so we push it to 100.
-         */
-        int rows = maxRows == -1 ? items.size() : Math.min(items.size(), maxRows == 30 ? 100 : maxRows);
-        double maxWidth = 0;
-        cell.updateTableColumn(col);
-        cell.updateTableView(tableView);
-        TableColumn<S, ?> column = null;
-        if (indexColumn > -1) {
-            column = tableView.getColumns().get(indexColumn);
-        }
-        
-        for (int row = 0; row < rows; row++) {
-            cell.updateIndex(row);
-            
-            if ((cell.getText() != null && !cell.getText().isEmpty()) || cell.getGraphic() != null) {
-                getChildren().add(cell);
-
-                cell.applyCss();
-                double width = cell.prefWidth(-1);
-                /**
-                 * If the cell is spanning in column, we need to take the other
-                 * columns into account in the calculation of the width. So we
-                 * compute the width needed by the cell and we substract the
-                 * other columns width.
-                 *
-                 * Also if the cell considered is not in the column, we still
-                 * have to compute because a previous column may have based its
-                 * calculation on the current width which will be modified.
-                 */
-                if (indexColumn < getColumns().size() && column != null) {
-                    int viewColumn = getViewColumn(indexColumn);
-                    TablePosition<S, ?> pos = new TablePosition<>(tableView, row, column);
-                    if (tableView.getColumnSpan(pos) > 1) {
-                        for (int i = viewColumn; i < viewColumn + tableView.getColumnSpan(pos); ++i) {
-                            if (i != indexColumn) {
-                                width -= tableView.getColumns().get(i).getWidth();
-                            }
-                        }
-                    }
-                }
-                maxWidth = Math.max(maxWidth, width);
-                getChildren().remove(cell);
-            }
-        }
-
-        // dispose of the cell to prevent it retaining listeners (see JDK-8122968)
-        cell.updateIndex(-1);
-
-        // JDK-8096512 - take into account the column header text / graphic widths.
-        double headerWidth = computeHeaderWidth(getTableHeaderRow().getColumnHeaderFor(tc));
-        maxWidth = Math.max(maxWidth, headerWidth);
-
-        // JDK-8126253
-        double widthMax = maxWidth + padding;
-        if (tableView.getColumnResizePolicy() == TableView.CONSTRAINED_RESIZE_POLICY) {
-            widthMax = Math.max(widthMax, col.getWidth());
-        }
-        
-        widthMax = snapSize(widthMax);
-        
-        col.impl_setWidth(widthMax);
-    }
+////    /**
+////     * 
+////     * @param tc the {@link TableColumn}
+////     * @param maxRows the maximum number of rows
+////     */
+////    @Override
+////    public void resizeColumnToFitContent(TableColumn<S, ?> tc, int maxRows) {
+////        if (tc == null || ! tc.isResizable() || getTableHeaderRow().getColumnHeaderFor(tc) instanceof NestedTableColumnHeader) {
+////            return;
+////        }
+////        
+////        final TableColumn<S, ?> col = tc;
+////        List<?> items = itemsProperty().get();
+////        if (items == null || items.isEmpty()) {
+////            return;
+////        }
+////
+////        Callback/* <TableColumn<T, ?>, TableCell<T,?>> */ cellFactory = col.getCellFactory();
+////        if (cellFactory == null) {
+////            return;
+////        }
+////
+////        TableCell cell = (TableCell<S, ?>) cellFactory.call(col);
+////        if (cell == null) {
+////            return;
+////        }
+////
+////        //The current index of that column
+////        int indexColumn = tableView.getColumns().indexOf(tc);
+////        
+////        // set this property to tell the TableCell we want to know its actual
+////        // preferred width, not the width of the associated TableColumnBase
+////        cell.getProperties().put("deferToParentPrefWidth", Boolean.TRUE); //$NON-NLS-1$
+////        
+////        // determine cell padding
+////        double padding = 10;
+////        Node n = cell.getSkin() == null ? null : cell.getSkin().getNode();
+////        if (n instanceof Region) {
+////            Region r = (Region) n;
+////            padding = r.snappedLeftInset() + r.snappedRightInset();
+////        }
+////
+////        /**
+////         * If maxRows is -1, we take all rows. If it's 30, it means it's coming
+////         * from TableColumnHeader during initialization, so we push it to 100.
+////         */
+////        int rows = maxRows == -1 ? items.size() : Math.min(items.size(), maxRows == 30 ? 100 : maxRows);
+////        double maxWidth = 0;
+////        cell.updateTableColumn(col);
+////        cell.updateTableView(tableView);
+////        TableColumn<S, ?> column = null;
+////        if (indexColumn > -1) {
+////            column = tableView.getColumns().get(indexColumn);
+////        }
+////        
+////        for (int row = 0; row < rows; row++) {
+////            cell.updateIndex(row);
+////            
+////            if ((cell.getText() != null && !cell.getText().isEmpty()) || cell.getGraphic() != null) {
+////                getChildren().add(cell);
+////
+////                cell.applyCss();
+////                double width = cell.prefWidth(-1);
+////                /**
+////                 * If the cell is spanning in column, we need to take the other
+////                 * columns into account in the calculation of the width. So we
+////                 * compute the width needed by the cell and we substract the
+////                 * other columns width.
+////                 *
+////                 * Also if the cell considered is not in the column, we still
+////                 * have to compute because a previous column may have based its
+////                 * calculation on the current width which will be modified.
+////                 */
+////                if (indexColumn < getColumns().size() && column != null) {
+////                    int viewColumn = getViewColumn(indexColumn);
+////                    TablePosition<S, ?> pos = new TablePosition<>(tableView, row, column);
+////                    if (tableView.getColumnSpan(pos) > 1) {
+////                        for (int i = viewColumn; i < viewColumn + tableView.getColumnSpan(pos); ++i) {
+////                            if (i != indexColumn) {
+////                                width -= tableView.getColumns().get(i).getWidth();
+////                            }
+////                        }
+////                    }
+////                }
+////                maxWidth = Math.max(maxWidth, width);
+////                getChildren().remove(cell);
+////            }
+////        }
+////
+////        // dispose of the cell to prevent it retaining listeners (see JDK-8122968)
+////        cell.updateIndex(-1);
+////
+////        // JDK-8096512 - take into account the column header text / graphic widths.
+////        double headerWidth = computeHeaderWidth(getTableHeaderRow().getColumnHeaderFor(tc));
+////        maxWidth = Math.max(maxWidth, headerWidth);
+////
+////        // JDK-8126253
+////        double widthMax = maxWidth + padding;
+////        if (tableView.getColumnResizePolicy() == TableView.CONSTRAINED_RESIZE_POLICY) {
+////            widthMax = Math.max(widthMax, col.getWidth());
+////        }
+////        
+////        widthMax = snapSize(widthMax);
+////        
+////        col.impl_setWidth(widthMax);
+////    }
 
     /***************************************************************************
      * * PRIVATE/PROTECTED METHOD * *
@@ -582,7 +557,7 @@ public class TableView2Skin<S> extends TableViewSkinBase<S,S,TableView<S>,TableV
                 });
         
         // Adjust line based in rowHeader offset
-        final Region columnReorderLine = getColumnReorderLine();
+        final Region columnReorderLine = (Region) getChildren().get(3); // getColumnReorderLine();
         columnReorderLine.translateXProperty().addListener((obs, ov, nv) -> {
             if (! tableView.isRowHeaderVisible() && ! columnReorderLine.getTransforms().isEmpty()) {
                 columnReorderLine.getTransforms().clear();
@@ -670,12 +645,12 @@ public class TableView2Skin<S> extends TableViewSkinBase<S,S,TableView<S>,TableV
     }
 
     /** {@inheritDoc} */
-    @Override protected void onFocusPreviousCell() {
+    @Override protected void onFocusAboveCell() {
         focusScroll();
     }
 
     /** {@inheritDoc} */
-    @Override protected void onFocusNextCell() {
+    @Override protected void onFocusBelowCell() {
         focusScroll();
     }
 
@@ -684,7 +659,7 @@ public class TableView2Skin<S> extends TableViewSkinBase<S,S,TableView<S>,TableV
     }
     
     void focusScroll() {
-        final TableFocusModel<?, ?> fm = getFocusModel();
+        final TableFocusModel<?, ?> fm = tableView.getFocusModel();
         if (fm == null) {
             return;
         }
@@ -701,7 +676,7 @@ public class TableView2Skin<S> extends TableViewSkinBase<S,S,TableView<S>,TableV
                 && !tableView.getFixedRows().contains(row)) {
             flow.scrollTo(row);
         } else {
-            flow.show(row);
+            flow.scrollTo(row);
         }
         scrollHorizontally();
         /**
@@ -710,16 +685,16 @@ public class TableView2Skin<S> extends TableViewSkinBase<S,S,TableView<S>,TableV
          ****************************************************************
          */
     }
-    
+
     /** {@inheritDoc} */
-    @Override protected void onSelectPreviousCell() {
-        super.onSelectPreviousCell();
+    @Override protected void onSelectAboveCell() {
+        super.onSelectAboveCell();
         scrollHorizontally();
     }
 
     /** {@inheritDoc} */
-    @Override protected void onSelectNextCell() {
-        super.onSelectNextCell();
+    @Override protected void onSelectBelowCell() {
+        super.onSelectBelowCell();
         scrollHorizontally();
     }
 
@@ -749,7 +724,7 @@ public class TableView2Skin<S> extends TableViewSkinBase<S,S,TableView<S>,TableV
     }
     
     BooleanProperty getTableMenuButtonVisibleProperty() {
-        return tableMenuButtonVisibleProperty();
+        return tableView.tableMenuButtonVisibleProperty();
     }
 
     /** {@inheritDoc} */
@@ -775,12 +750,12 @@ public class TableView2Skin<S> extends TableViewSkinBase<S,S,TableView<S>,TableV
         
         fixedColumnWidth = 0;
         final double pos = getFlow().getHorizontalBar().getValue();
-        int index = getVisibleLeafColumns().indexOf(col);
+        int index = tableView.getVisibleLeafColumns().indexOf(col);
         double start = 0;// scrollX;
 
         for (int columnIndex = 0; columnIndex < index; ++columnIndex) {
             //Do not add the width of hidden column!
-            if (getVisibleLeafColumns().get(columnIndex).isVisible()) {
+            if (tableView.getVisibleLeafColumns().get(columnIndex).isVisible()) {
                 TableColumn<S, ?> column = (TableColumn<S, ?>) tableView.getVisibleLeafColumns().get(columnIndex);
                 while (column.getParentColumn() != null) {
                     // on nested columns, we check if the root parent is the one fixed
@@ -826,11 +801,11 @@ public class TableView2Skin<S> extends TableViewSkinBase<S,S,TableView<S>,TableV
          */
     }
 
-    /** {@inheritDoc} */
-    @Override protected void horizontalScroll() {
-        super.horizontalScroll();
-        getSouthHeader().updateScrollX();
-    }
+//    /** {@inheritDoc} */
+//    @Override protected void horizontalScroll() {
+//        super.horizontalScroll();
+//        getSouthHeader().updateScrollX();
+//    }
 
     private void verticalScroll() {
         if (rowHeader != null) {
@@ -922,84 +897,13 @@ public class TableView2Skin<S> extends TableViewSkinBase<S,S,TableView<S>,TableV
         }
     };
 
-    /** {@inheritDoc} */
-    @Override protected TableSelectionModel<S> getSelectionModel() {
-        return getSkinnable().getSelectionModel();
-    }
+//    /** {@inheritDoc} */
+//    @Override protected boolean resizeColumn(TableColumn<S, ?> tc, double delta) {
+//        getTableHeaderRow2().getRootHeader().lastColumnResized = getColumns().indexOf(tc);
+//        return getSkinnable().resizeColumn(tc, delta);
+//    }
 
-    /** {@inheritDoc} */
-    @Override protected TableFocusModel<S, TableColumn<S, ?>> getFocusModel() {
-        return getSkinnable().getFocusModel();
-    }
-
-    /** {@inheritDoc} */
-    @Override protected TablePositionBase<? extends TableColumn<S, ?>> getFocusedCell() {
-        return getSkinnable().getFocusModel().getFocusedCell();
-    }
-
-    /** {@inheritDoc} */
-    @Override protected ObservableList<? extends TableColumn<S, ?>> getVisibleLeafColumns() {
-        return getSkinnable().getVisibleLeafColumns();
-    }
-
-    /** {@inheritDoc} */
-    @Override protected int getVisibleLeafIndex(TableColumn<S, ?> tc) {
-        return getSkinnable().getVisibleLeafIndex(tc);
-    }
-
-    /** {@inheritDoc} */
-    @Override protected TableColumn<S, ?> getVisibleLeafColumn(int col) {
-        return getSkinnable().getVisibleLeafColumn(col);
-    }
-
-    /** {@inheritDoc} */
-    @Override protected ObservableList<TableColumn<S, ?>> getColumns() {
-        return getSkinnable().getColumns();
-    }
-
-    /** {@inheritDoc} */
-    @Override protected ObservableList<TableColumn<S, ?>> getSortOrder() {
-        return getSkinnable().getSortOrder();
-    }
-
-    /** {@inheritDoc} */
-    @Override protected ObjectProperty<ObservableList<S>> itemsProperty() {
-        return getSkinnable().itemsProperty();
-    }
-
-    /** {@inheritDoc} */
-    @Override protected ObjectProperty<Callback<TableView<S>, TableRow<S>>> rowFactoryProperty() {
-        return getSkinnable().rowFactoryProperty();
-    }
-
-    /** {@inheritDoc} */
-    @Override protected ObjectProperty<Node> placeholderProperty() {
-        return getSkinnable().placeholderProperty();
-    }
-
-    /** {@inheritDoc} */
-    @Override protected BooleanProperty tableMenuButtonVisibleProperty() {
-        return getSkinnable().tableMenuButtonVisibleProperty();
-    }
-
-    /** {@inheritDoc} */
-    @Override protected ObjectProperty<Callback<ResizeFeaturesBase, Boolean>> columnResizePolicyProperty() {
-        return (ObjectProperty<Callback<ResizeFeaturesBase, Boolean>>) (Object)getSkinnable().columnResizePolicyProperty();
-    }
-
-    /** {@inheritDoc} */
-    @Override protected boolean resizeColumn(TableColumn<S, ?> tc, double delta) {
-        getTableHeaderRow2().getRootHeader().lastColumnResized = getColumns().indexOf(tc);
-        return getSkinnable().resizeColumn(tc, delta);
-    }
-
-    /** {@inheritDoc} */
-    @Override protected void edit(int index, TableColumn<S, ?> column) {
-        getSkinnable().edit(index, column);
-    }
-
-    /** {@inheritDoc} */
-    @Override public TableRow<S> createCell() {
+    public TableRow<S> createCell() {
         TableRow<S> cell;
 
         if (getSkinnable().getRowFactory() != null) {
@@ -1011,7 +915,7 @@ public class TableView2Skin<S> extends TableViewSkinBase<S,S,TableView<S>,TableV
         cell.updateTableView(getSkinnable());
         return cell;
     }
-
+    
     /** {@inheritDoc} */
     @Override public final int getItemCount() {
         return getSkinnable().getItems() == null ? 0 : getSkinnable().getItems().size();
@@ -1079,33 +983,9 @@ public class TableView2Skin<S> extends TableViewSkinBase<S,S,TableView<S>,TableV
             if (fixedHeight > posFinalOffset) {
                 flow.scrollTo(newIndex.intValue());
             } else if (fixedHeight > posFinalOffset - heightLastRow) {
-                flow.adjustPixels(posFinalOffset - heightLastRow - fixedHeight);
+                flow.scrollPixels(posFinalOffset - heightLastRow - fixedHeight);
             }
         }
-    }
-
-    private static double computeHeaderWidth(TableColumnHeader header) {
-        if (header == null) {
-            return -1;
-        }
-        
-        double labelWidth = header.getChildrenUnmodifiable().stream()
-                .filter(Label.class::isInstance)
-                .findFirst()
-                .map(Label.class::cast)
-                .map(label -> {
-                    TextLayout layout = Toolkit.getToolkit().getTextLayoutFactory().createLayout();
-                    layout.setContent(label.getText() != null ? label.getText() : "", label.getFont().impl_getNativeFont());
-                    layout.setWrapWidth(-1);
-                    double headerTextWidth =  layout.getBounds().getWidth();
-                    Node graphic = label.getGraphic();
-                    double headerGraphicWidth = graphic == null ? 0 : graphic.prefWidth(-1) + label.getGraphicTextGap();
-                    return headerTextWidth + headerGraphicWidth;
-                })
-                .orElse(0d);
-        
-        // Magic 10 is to allow for sort arrow to appear without text truncation.
-        return labelWidth + 10 + header.snappedLeftInset() + header.snappedRightInset();
     }
 
 }

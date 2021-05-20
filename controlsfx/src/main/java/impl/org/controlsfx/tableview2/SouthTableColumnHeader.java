@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013, 2018 ControlsFX
+ * Copyright (c) 2013, 2020 ControlsFX
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,6 @@
  */
 package impl.org.controlsfx.tableview2;
 
-import com.sun.javafx.scene.control.skin.TableViewSkinBase;
-import static impl.org.controlsfx.tableview2.SouthTableHeaderRow.SOUTH_HEADER_STYLE;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.WeakInvalidationListener;
@@ -35,10 +33,13 @@ import javafx.scene.Node;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumnBase;
+import javafx.scene.control.skin.TableViewSkinBase;
 import javafx.scene.layout.Region;
 import javafx.scene.shape.Rectangle;
 import org.controlsfx.control.tableview2.TableColumn2;
 import org.controlsfx.control.tableview2.TableView2;
+
+import static impl.org.controlsfx.tableview2.SouthTableHeaderRow.SOUTH_HEADER_STYLE;
 
 public class SouthTableColumnHeader extends Region {
 
@@ -164,7 +165,7 @@ public class SouthTableColumnHeader extends Region {
         }
     }
     
-    public TableColumnBase getTableColumn() { 
+    public TableColumnBase getTableColumn() {
         return column; 
     }
 

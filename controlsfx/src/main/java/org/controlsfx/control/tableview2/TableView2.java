@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013, 2018 ControlsFX
+ * Copyright (c) 2013, 2020 ControlsFX
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,12 +29,6 @@ package org.controlsfx.control.tableview2;
 import impl.org.controlsfx.tableview2.SortUtils.SortEndedEvent;
 import impl.org.controlsfx.tableview2.SortUtils.SortStartedEvent;
 import impl.org.controlsfx.tableview2.TableView2Skin;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.property.BooleanProperty;
@@ -57,8 +51,15 @@ import org.controlsfx.control.tableview2.actions.RowFixAction;
 import org.controlsfx.control.tableview2.cell.ComboBox2TableCell;
 import org.controlsfx.control.tableview2.cell.TextField2TableCell;
 
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
+
 /**
- * The TableView2 is an advanced JavaFX {@link TableView} control, that can 
+ * The TableView2 is an advanced JavaFX {@link TableView} control, that can
  * be used as drop-in replacement control for the existing TableView, and provides
  * different functionalities and use cases. 
  * 
@@ -70,7 +71,7 @@ import org.controlsfx.control.tableview2.cell.TextField2TableCell;
  * they are always visible on screen.</li>
  * <li>A row header can be switched on in order to display any custom content.</li>
  * <li>The column header can be extended to provide custom content.</li>
- * <li>{@link FilteredTableView} is a subclass of TableView2 with extended 
+ * <li>{@link FilteredTableView} is a subclass of TableView2 with extended
  * filtering options</li>
  * </ul>
  * 
@@ -79,7 +80,7 @@ import org.controlsfx.control.tableview2.cell.TextField2TableCell;
  * <h3>Fixing Rows and Columns</h3> 
  * <br>
  * Rows and columns can be fixed using dedicated actions like 
- * {@link ColumnFixAction} and {@link RowFixAction}. When fixed, the header's 
+ * {@link ColumnFixAction} and {@link RowFixAction}. When fixed, the header's
  * background will show a darker color. For instance, these actions can be 
  * attached to a {@link ContextMenu} that can be installed to the row header cells
  * with {@link #rowHeaderContextMenuFactory}.
@@ -93,41 +94,41 @@ import org.controlsfx.control.tableview2.cell.TextField2TableCell;
  *
  * <br>
  * If you want to fix several rows or columns together, you can call 
- * {@link #areRowsFixable(java.util.List) } or  
- * {@link #areTableViewColumnsFixable(java.util.List)}
- * to verify if you can fix them. 
+ * {@link #areRowsFixable(List) } or
+ * {@link #areTableViewColumnsFixable(List)}
+ * to verify if you can fix them.
  *
  * Calling those methods prior every move will ensure that no exception will be thrown.
  * <br>
  * You have also the possibility to deactivate these features.
  * <br>
- * 
+ *
  * <h3>Row Headers</h3>
  * <br>
  * You can also access and toggle row header's visibility by using the method
  * provided {@link #setRowHeaderVisible(boolean) }.
- * 
- * By default the row header will show the row index, but you can set the content 
- * with {@link #setRowHeader(javafx.scene.control.TableColumn) }.
- * 
+ *
+ * By default the row header will show the row index, but you can set the content
+ * with {@link #setRowHeader(TableColumn) }.
+ *
  * <h3>Cell editing</h3>
  * <br>
  * Two specialized cell factories are available {@link TextField2TableCell} and
- * {@link ComboBox2TableCell}, providing support for commit on focus lost. 
- * 
+ * {@link ComboBox2TableCell}, providing support for commit on focus lost.
+ *
  * <h3>Filtering options</h3>
  * <br>
- * While filtering can be implemented as in a regular JavaFX TableView control, 
- * see {@link FilteredTableView} for extended filtering options. 
- * 
+ * While filtering can be implemented as in a regular JavaFX TableView control,
+ * see {@link FilteredTableView} for extended filtering options.
+ *
  * <h3>Features not supported</h3>
  * <br>
- * Cell spanning is not supported yet. 
- * 
+ * Cell spanning is not supported yet.
+ *
  * <h2>Sample</h2>
- * 
- * <p>Let's provide the underlying data model, based on a <code>Person</code> class. 
- * 
+ *
+ * <p>Let's provide the underlying data model, based on a <code>Person</code> class.
+ *
  * <pre>
  * {@code
  * public class Person {
@@ -147,18 +148,18 @@ import org.controlsfx.control.tableview2.cell.TextField2TableCell;
  *         return lastName;
  *     }
  * }}</pre>
- * 
+ *
  * <p>A TableView2 can be created, and filled with an observable list of people:
- * 
+ *
  * <pre>
  * {@code
  * TableView2<Person> table = new TableView2<Person>();
  * ObservableList<Person> people = getPeople();
  * table.setItems(people);
  * }</pre>
- * 
+ *
  * <p>Now we add two {@link TableColumn2 columns} to the table:
- * 
+ *
  * <pre>
  * {@code
  * TableColumn2<Person,String> firstNameCol = new TableColumn2<>("First Name");
@@ -169,20 +170,20 @@ import org.controlsfx.control.tableview2.cell.TextField2TableCell;
  * table.getColumns().setAll(firstNameCol, lastNameCol);}</pre>
  *
  * <p>A cell factory that allows commit on focus lost can be set:
- * 
+ *
  * <pre>
  * {@code
  * firstName.setCellFactory(TextField2TableCell.forTableColumn());}</pre>
  *
  * <p>We can fix some row and columns, and also show the row header:
- * 
+ *
  * <pre>
  * {@code
  * table.getFixedColumns().setAll(firstNameColumn);
  * table.getFixedRows().setAll(0, 1, 2);
  *
  * table.setRowHeaderVisible(true);}</pre>
- * 
+ *
  * @param <S> The type of the objects contained within the TableView2 items list.
  */
 public class TableView2<S> extends TableView<S> {
@@ -204,7 +205,7 @@ public class TableView2<S> extends TableView<S> {
      * second cell is switching from ROW_SPAN_INVISIBLE state to ROW_VISIBLE
      * state. <br>
      * <br>
-     * 
+     *
      * <center><img src="spanType.png" alt="Screenshot of TableView2.SpanType"></center>
      * Refer to {@link TableView2} for more information.
      */
@@ -241,7 +242,7 @@ public class TableView2<S> extends TableView<S> {
      * Default width of the VerticalHeader.
      */
     private static final double DEFAULT_ROW_HEADER_WIDTH = 30.0;
-    
+
     /***************************************************************************
      * * Private Fields * *
      **************************************************************************/
@@ -259,12 +260,12 @@ public class TableView2<S> extends TableView<S> {
      * The vertical header width, just for the Label.
      */
     private final DoubleProperty rowHeaderWidth = new SimpleDoubleProperty(DEFAULT_ROW_HEADER_WIDTH);
-    
+
     /*
      * cache the stylesheet as lookup takes time and the getUserAgentStylesheet is called repeatedly
      */
     private String stylesheet;
-    
+
     /***************************************************************************
      * * Constructor * *
      **************************************************************************/
@@ -276,7 +277,7 @@ public class TableView2<S> extends TableView<S> {
     public TableView2() {
         this(FXCollections.<S>observableArrayList());
     }
-    
+
     /**
      * Creates a TableView2 with the content provided in the items ObservableList.
      *
@@ -286,7 +287,7 @@ public class TableView2<S> extends TableView<S> {
     public TableView2(ObservableList<S> items) {
         super(items);
         getStyleClass().add("table-view2"); //$NON-NLS-1$
-        
+
         // Listeners & handlers
         fixedRows.addListener(fixedRowsListener);
         fixedColumns.addListener(fixedColumnsListener);
@@ -298,15 +299,15 @@ public class TableView2<S> extends TableView<S> {
                 skinProperty().removeListener(this);
             }
         });
-        
+
         getItems().addListener((Observable o) -> initRowFix());
         initRowFix();
     }
-    
+
     /***************************************************************************
      * * Public Methods * *
      **************************************************************************/
-    
+
     /**
      * Return the current row span at the given position in
      * the Table.
@@ -359,7 +360,7 @@ public class TableView2<S> extends TableView<S> {
     public final boolean isRowFixable(int row) {
         return row >= 0 && row < rowFix.size() && isRowFixingEnabled() ? rowFix.get(row) : false;
     }
-    
+
     /**
      * Indicates whether a List of rows can be fixed or not.
      *
@@ -432,7 +433,7 @@ public class TableView2<S> extends TableView<S> {
     }
 
     /**
-     * You can fix or unfix a column by modifying this list. 
+     * You can fix or unfix a column by modifying this list.
      *
      * @return an ObservableList of the fixed columns.
      */
@@ -455,13 +456,13 @@ public class TableView2<S> extends TableView<S> {
     }
 
     /**
-     * Indicates whether a List of {@link javafx.scene.control.TableColumn} can be fixed or
+     * Indicates whether a List of {@link TableColumn} can be fixed or
      * not.
      *
      * A set of columns cannot be fixed if any cell inside these columns has a
      * column span superior to the number of fixed columns.
      *
-     * @param list list of {@link javafx.scene.control.TableColumn}
+     * @param list list of {@link TableColumn}
      * @return true if the List of columns can be fixed together.
      */
     private boolean areTableViewColumnsFixable(List<? extends TableColumn> list) {
@@ -472,8 +473,8 @@ public class TableView2<S> extends TableView<S> {
     }
 
     /**
-     * This method is the same as {@link #areTableViewColumnsFixable(java.util.List)
-     * } but is using a List of {@link javafx.scene.control.TableColumn} indices.
+     * This method is the same as {@link #areTableViewColumnsFixable(List)
+     * } but is using a List of {@link TableColumn} indices.
      *
      * A set of columns cannot be fixed if any cell inside these columns has a
      * column span superior to the number of fixed columns.
@@ -504,7 +505,7 @@ public class TableView2<S> extends TableView<S> {
         }
         return true;
     }
-    
+
     /**
      * Return whether changes to Fixed columns are enabled.
      *
@@ -533,7 +534,7 @@ public class TableView2<S> extends TableView<S> {
     public final ReadOnlyBooleanProperty columnFixingEnabledProperty() {
         return columnFixingEnabled;
     }
-    
+
     /**
      * Activate and deactivate the row header.
      *
@@ -570,7 +571,7 @@ public class TableView2<S> extends TableView<S> {
     public final DoubleProperty rowHeaderWidthProperty(){
         return rowHeaderWidth;
     }
-    
+
     /**
      * Specify a new width for the row header.
      *
@@ -579,7 +580,7 @@ public class TableView2<S> extends TableView<S> {
     public final void setRowHeaderWidth(double value){
         rowHeaderWidth.setValue(value);
     }
-    
+
     /**
      *
      * @return the current width of the row header.
@@ -587,23 +588,23 @@ public class TableView2<S> extends TableView<S> {
     public final double getRowHeaderWidth(){
         return rowHeaderWidth.get();
     }
-    
+
     /**
      * The row header property wraps a {@link TableColumn} that can be used to
-     * render the row header. 
-     * 
-     * By default, if this property is not set, a TableColumn will be used to 
+     * render the row header.
+     *
+     * By default, if this property is not set, a TableColumn will be used to
      * render the number of row, starting from 1.
      */
     private final ObjectProperty<TableColumn<S, ?>> rowHeader = new SimpleObjectProperty<>(this, "rowHeader");
     public final void setRowHeader(TableColumn<S, ?> value) { rowHeader.set(value); }
     public final TableColumn<S, ?> getRowHeader() { return rowHeader.get(); }
     public final ObjectProperty<TableColumn<S, ?>> rowHeaderProperty() { return rowHeader; }
-    
+
     /**
-     * An object property of a {@link BiFunction} that can be used to define the 
+     * An object property of a {@link BiFunction} that can be used to define the
      * context menu of each row of the row header.
-     * 
+     *
      * See {@link RowFixAction}.
      */
     private ObjectProperty<BiFunction<Integer, S, ContextMenu>> rowHeaderContextMenuFactory;
@@ -615,9 +616,9 @@ public class TableView2<S> extends TableView<S> {
         }
         return rowHeaderContextMenuFactory;
     }
-    
+
     /**
-     * This property allows the developer to blend the south table header row 
+     * This property allows the developer to blend the south table header row
      * with the regular table header row, so for each column, the regular header
      * and the south table column header look like a single one.
      */
@@ -625,7 +626,7 @@ public class TableView2<S> extends TableView<S> {
     public final void setSouthHeaderBlended(boolean value) { southHeaderBlended.set(value); }
     public final boolean isSouthHeaderBlended() { return southHeaderBlended.get(); }
     public final BooleanProperty southHeaderBlendedProperty() { return southHeaderBlended; }
-   
+
     /**
      * Return the {@link SpanType} of a cell. This is used internally by the
      * TableView2 but some users may find it useful.
@@ -649,8 +650,8 @@ public class TableView2<S> extends TableView<S> {
         if (pos.getColumn() < 0) {
             return SpanType.COLUMN_SPAN_INVISIBLE;
         }
-        
-        final int cellColumn = modelColumn; 
+
+        final int cellColumn = modelColumn;
 //        final int cellRow = spv.getViewRow(cell.getRow());
         int cellRowSpan = 1; //cell.getRowSpan();
 
@@ -689,11 +690,11 @@ public class TableView2<S> extends TableView<S> {
             return SpanType.NORMAL_CELL;
         }
     }
-    
+
     /**
-     * Overrides {@link TableView#sort() } in order to fire custom sort events 
+     * Overrides {@link TableView#sort() } in order to fire custom sort events
      * when sorting starts and finishes.
-     * 
+     *
      * See {@link TableView#sort() } for more details about calling directly this
      * method.
      */
@@ -701,9 +702,9 @@ public class TableView2<S> extends TableView<S> {
     public void sort() {
         SortStartedEvent<TableView<S>> sortStartedEvent = new SortStartedEvent<>(TableView2.this, TableView2.this);
         fireEvent(sortStartedEvent);
-        
-        super.sort(); 
-        
+
+        super.sort();
+
         SortEndedEvent<TableView<S>> sortEndedEvent = new SortEndedEvent<>(TableView2.this, TableView2.this);
         fireEvent(sortEndedEvent);
     }
@@ -734,7 +735,7 @@ public class TableView2<S> extends TableView<S> {
                 }
                 FXCollections.sort(fixedRows);
             }
-            
+
             if(c.wasRemoved()){
                 //Handle this case.
             }
@@ -765,7 +766,7 @@ public class TableView2<S> extends TableView<S> {
 
     private final ListChangeListener<TableColumn> fixedColumnsListener = new ListChangeListener<TableColumn>() {
         @Override
-        public void onChanged(ListChangeListener.Change<? extends TableColumn> c) {
+        public void onChanged(Change<? extends TableColumn> c) {
             while (c.next()) {
                 if (c.wasAdded()) {
                     List<? extends TableColumn> newColumns = c.getAddedSubList();

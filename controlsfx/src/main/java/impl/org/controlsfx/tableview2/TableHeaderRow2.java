@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013, 2018 ControlsFX
+ * Copyright (c) 2013, 2020 ControlsFX
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,20 +26,15 @@
  */
 package impl.org.controlsfx.tableview2;
 
-import com.sun.javafx.scene.control.skin.NestedTableColumnHeader;
-import com.sun.javafx.scene.control.skin.TableColumnHeader;
-import com.sun.javafx.scene.control.skin.TableHeaderRow;
-import static impl.org.controlsfx.tableview2.SouthTableHeaderRow.SOUTH_HEADER_STYLE;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.List;
-import java.util.Objects;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.collections.ListChangeListener;
 import javafx.event.EventHandler;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.skin.NestedTableColumnHeader;
+import javafx.scene.control.skin.TableColumnHeader;
+import javafx.scene.control.skin.TableHeaderRow;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
@@ -47,6 +42,13 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import org.controlsfx.control.tableview2.TableView2;
+
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.List;
+import java.util.Objects;
+
+import static impl.org.controlsfx.tableview2.SouthTableHeaderRow.SOUTH_HEADER_STYLE;
 
 /**
  * The set of horizontal (column) headers.
@@ -75,6 +77,7 @@ public class TableHeaderRow2 extends TableHeaderRow {
     private double tableWidth;
     
     private final NestedTableColumnHeader header;
+    private NestedTableColumnHeader2 rootHeader2;
     private final Region filler;
     private final Pane cornerRegion;
     private final StackPane dragHeader;
@@ -161,11 +164,6 @@ public class TableHeaderRow2 extends TableHeaderRow {
         control.southHeaderBlendedProperty().addListener(o -> updateVisibleLeafStyle());
     }
 
-    /** {@inheritDoc} */
-    @Override public NestedTableColumnHeader2 getRootHeader() {
-        return (NestedTableColumnHeader2) super.getRootHeader();
-    }
-
     public SouthTableHeaderRow getSouthHeaderRow() {
         return southHeaderRow;
     }
@@ -197,7 +195,7 @@ public class TableHeaderRow2 extends TableHeaderRow {
 
         final double controlInsets = control.snappedLeftInset() + control.snappedRightInset();
         double fillerWidth = tableWidth - headerWidth + filler.getInsets().getLeft() - controlInsets;
-        fillerWidth -= skin.tableMenuButtonVisibleProperty().get() ? cornerWidth : 0;
+        fillerWidth -= control.tableMenuButtonVisibleProperty().get() ? cornerWidth : 0;
         filler.setVisible(fillerWidth > 0);
         if (fillerWidth > 0) {
             filler.resizeRelocate(x + headerWidth, snappedTopInset(), fillerWidth, prefHeight);
@@ -238,13 +236,18 @@ public class TableHeaderRow2 extends TableHeaderRow {
         
         if (working) {
             requestLayout();
-            getRootHeader().layoutFixedColumns();
+            if (rootHeader2 == null) {
+                createRootHeader();
+            }
+            rootHeader2.layoutFixedColumns();
         }
+        skin.getSouthHeader().updateScrollX();
     }
 
     /** {@inheritDoc} */
     @Override protected NestedTableColumnHeader createRootHeader() {
-        return new NestedTableColumnHeader2(getTableSkin(), null);
+        rootHeader2 = new NestedTableColumnHeader2(null);
+        return rootHeader2;
     }
 
     protected void updateVisibleLeafColumnHeaders() {
@@ -442,7 +445,10 @@ public class TableHeaderRow2 extends TableHeaderRow {
         } else {
             getStyleClass().remove("invisible"); //$NON-NLS-1$
             requestLayout();
-            getRootHeader().layoutFixedColumns();
+            if (rootHeader2 == null) {
+                createRootHeader();
+            }
+            rootHeader2.layoutFixedColumns();
             updateHighlightSelection();
         }
     }
@@ -473,7 +479,7 @@ public class TableHeaderRow2 extends TableHeaderRow {
                 setReordering(false);
                 TableColumnHeader columnHeader = getReorderingRegion();
                 if (columnHeader != null) {
-                    columnHeader.getTableColumn().impl_setReorderable(false);
+                    columnHeader.getTableColumn().setReorderable(false);
                 }
             }
         };

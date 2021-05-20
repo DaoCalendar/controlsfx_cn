@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013, 2018 ControlsFX
+ * Copyright (c) 2013, 2021, ControlsFX
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,7 @@
  */
 package impl.org.controlsfx.skin;
 
-import java.util.Collections;
-
+import impl.org.controlsfx.collections.ReadOnlyUnbackedObservableList;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -35,20 +34,18 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Skin;
+import javafx.scene.control.SkinBase;
 import javafx.scene.control.cell.CheckBoxListCell;
+import javafx.scene.control.skin.ComboBoxListViewSkin;
 import javafx.scene.input.KeyCode;
 
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import org.controlsfx.control.CheckComboBox;
 
-import com.sun.javafx.scene.control.ReadOnlyUnbackedObservableList;
-import com.sun.javafx.scene.control.behavior.BehaviorBase;
-import com.sun.javafx.scene.control.skin.BehaviorSkinBase;
-import com.sun.javafx.scene.control.skin.ComboBoxListViewSkin;
 import org.controlsfx.control.IndexedCheckModel;
 
-public class CheckComboBoxSkin<T> extends BehaviorSkinBase<CheckComboBox<T>, BehaviorBase<CheckComboBox<T>>> {
+public class CheckComboBoxSkin<T> extends SkinBase<CheckComboBox<T>> {
     
     /**************************************************************************
      * 
@@ -83,7 +80,7 @@ public class CheckComboBoxSkin<T> extends BehaviorSkinBase<CheckComboBox<T>, Beh
 
     @SuppressWarnings("unchecked")
     public CheckComboBoxSkin(final CheckComboBox<T> control) {
-        super(control, new BehaviorBase<>(control, Collections.emptyList()));
+        super(control);
         
         this.control = control;
         this.items = control.getItems();
@@ -103,23 +100,18 @@ public class CheckComboBoxSkin<T> extends BehaviorSkinBase<CheckComboBox<T>, Beh
 
         // installs a custom CheckBoxListCell cell factory
         comboBox.setCellFactory(listView -> {
-            CheckBoxListCell<T> result = new CheckBoxListCell<>(control::getItemBooleanProperty);
-            result.focusedProperty().addListener((o, ov, nv) -> {
-                if (nv) {
-                    result.getParent().requestFocus();
-                }
-            });
+            CheckBoxListCell<T> checkBoxListCell = new CheckBoxListCell<>(control::getItemBooleanProperty);
             //clicking on the label checks/unchecks the item
-            result.setOnMouseClicked(e -> {
-                T item = result.getItem();
+            checkBoxListCell.setOnMouseClicked(e -> {
+                T item = checkBoxListCell.getItem();
                 if (control.getCheckModel().isChecked(item)) {                        
                     control.getCheckModel().clearCheck(item);
                 } else {
                     control.getCheckModel().check(item);                        
                 }
             });
-            result.converterProperty().bind(control.converterProperty());
-            return result;
+            checkBoxListCell.converterProperty().bind(control.converterProperty());
+            return checkBoxListCell;
         });
         
         // we render the selection into a custom button cell, so that it can 
@@ -207,7 +199,7 @@ public class CheckComboBoxSkin<T> extends BehaviorSkinBase<CheckComboBox<T>, Beh
             if (control.isShowCheckedCount()) {
                 //...adding also the count of how many are selected, if so configured
                 vResult = String.format("%s (%d/%d)", vResult, selectedItems.size(), items.size());
-            }             
+            }
             return vResult;
         } else {            
             //...otherwise we generate a string concatenating the items
@@ -233,13 +225,8 @@ public class CheckComboBoxSkin<T> extends BehaviorSkinBase<CheckComboBox<T>, Beh
     }
 
     private Skin<?> createComboBoxListViewSkin(ComboBox<T> comboBox) {
-        final ComboBoxListViewSkin<T> comboBoxListViewSkin = new ComboBoxListViewSkin<T>(comboBox) {
-            // overridden to prevent the popup from disappearing
-            @Override
-            protected boolean isHideOnClickEnabled() {
-                return false;
-            }
-        };
+        final ComboBoxListViewSkin<T> comboBoxListViewSkin = new ComboBoxListViewSkin<T>(comboBox);
+        comboBoxListViewSkin.setHideOnClick(false);
         // Override to prevent the default behaviour of ListView when SPACE and ENTER is pressed
         final ListView<T> listView = (ListView<T>) comboBoxListViewSkin.getPopupContent();
         listView.setOnKeyPressed(e -> {
@@ -256,6 +243,7 @@ public class CheckComboBoxSkin<T> extends BehaviorSkinBase<CheckComboBox<T>, Beh
             } else if (e.getCode() == KeyCode.TAB ||
                     new KeyCodeCombination(KeyCode.TAB, KeyCombination.SHIFT_ANY).match(e)) {
                 e.consume();
+                listView.requestFocus();
                 hide();
                 control.fireEvent(e);
             }  else if (e.getCode() == KeyCode.LEFT || e.getCode() == KeyCode.RIGHT) {

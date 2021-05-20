@@ -26,16 +26,16 @@
  */
 package org.controlsfx.control.tableview2.filter.filtermenubutton;
 
-import javafx.scene.control.MenuButton;
-import javafx.util.StringConverter;
-
-import java.util.function.Predicate;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuButton;
 import javafx.scene.layout.StackPane;
+import javafx.util.StringConverter;
+
+import java.util.function.Predicate;
 
 /**
  * Abstract class for a MenuButton extension with operators and parse

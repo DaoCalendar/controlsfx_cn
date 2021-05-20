@@ -41,7 +41,7 @@ import java.util.List;
 /**
  * A popup control containing a {@link javafx.scene.control.TextField} to filter data in a 
  * {@link org.controlsfx.control.tableview2.FilteredTableView}.
- * The control accepts a {@link FilteredTableColumn} on which the filter is to be 
+ * The control accepts a {@link FilteredTableColumn} on which the filter is to be
  * applied.
  * {@link #showPopup()} should be called to show the popup.
  *
@@ -49,7 +49,7 @@ import java.util.List;
  *      {@link org.controlsfx.control.tableview2.FilteredTableView} items list.
  * @param <T> Type of the content to be filtered,
  *           which is similar to the type of cells contained in the 
- *      {@link org.controlsfx.control.tableview2.FilteredTableColumn}.
+ *      {@link FilteredTableColumn}.
  */
 public abstract class PopupFilter<S, T> extends PopupControl {
 

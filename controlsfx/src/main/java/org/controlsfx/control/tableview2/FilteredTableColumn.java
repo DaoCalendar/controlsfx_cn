@@ -30,6 +30,7 @@ import impl.org.controlsfx.tableview2.RowHeader;
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
+import javafx.beans.WeakInvalidationListener;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -51,7 +52,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import javafx.beans.WeakInvalidationListener;
 
 /**
  * An extension of {@link TableColumn2} that allows filtering options.
@@ -92,7 +92,7 @@ public class FilteredTableColumn<S, T> extends TableColumn2<S, T> {
     };
     private final WeakListChangeListener<S> weakListChangeListener = new WeakListChangeListener<>(backingListListener);
     
-    private final ChangeListener<T> changeListener = (obs, ov, nv) -> 
+    private final ChangeListener<T> changeListener = (obs, ov, nv) ->
         Platform.runLater(() -> runOnFilteredTableView(FilteredTableView::filter));
     
     private final ChangeListener<Predicate<?>> filterListener = (obs, ov, nv) -> updateButton(nv != null);

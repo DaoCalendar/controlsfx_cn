@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 ControlsFX
+ * Copyright (c) 2018, 2020 ControlsFX
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Arrays;
 import java.util.Random;
-import static javafx.application.Application.launch;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -87,14 +86,14 @@ import org.controlsfx.samples.Utils;
 public class HelloTableView2 extends ControlsFXSample {
 
     private final ObservableList<Person> data = generateData(100);
-    private TableView2Sample table; 
-    
+    private TableView2Sample table;
+
     private StackPane centerPane;
 
     public static void main(String[] args) {
         launch(args);
     }
-    
+
     @Override
     public String getSampleName() {
         return "TableView2";
@@ -109,7 +108,7 @@ public class HelloTableView2 extends ControlsFXSample {
 
     @Override
     public String getControlStylesheetURL() {
-        return "/org/controlsfx/samples/tableview2.css";
+        return "/org/controlsfx/tableview2/tableview2.css";
     }
 
     @Override
@@ -118,7 +117,7 @@ public class HelloTableView2 extends ControlsFXSample {
         centerPane = new StackPane(table);
         return centerPane;
     }
-    
+
     @Override
     public Node getControlPanel() {
         return new VBox(10, buildCommonControl(), buildTableView2Control());
@@ -147,41 +146,41 @@ public class HelloTableView2 extends ControlsFXSample {
         table.editableProperty().bind(tableEditingEnabled.selectedProperty());
         tableEditingEnabled.setSelected(true);
         grid.add(tableEditingEnabled, 0, row++);
-        
+
         CheckBox columnsEditingEnabled = new CheckBox("Columns Editing Enabled");
         columnsEditingEnabled.selectedProperty().addListener((obs, ov, nv) -> {
             table.getVisibleLeafColumns().forEach(column -> column.setEditable(nv));
         });
         columnsEditingEnabled.setSelected(true);
         grid.add(columnsEditingEnabled, 0, row++);
-        
+
         CheckBox cellSelectionEnabled = new CheckBox("Cell Selection Enabled");
         table.getSelectionModel().cellSelectionEnabledProperty().bind(cellSelectionEnabled.selectedProperty());
         grid.add(cellSelectionEnabled, 0, row++);
-        
+
         CheckBox multipleSelection = new CheckBox("Multiple Selection");
         table.getSelectionModel().selectionModeProperty().bind(Bindings.when(multipleSelection.selectedProperty()).then(SelectionMode.MULTIPLE).otherwise(SelectionMode.SINGLE));
         grid.add(multipleSelection, 0, row++);
-        
+
         CheckBox constrainedColumnPolicy = new CheckBox("Constrained Column Policy");
         table.columnResizePolicyProperty().bind(Bindings.when(constrainedColumnPolicy.selectedProperty()).then(TableView.CONSTRAINED_RESIZE_POLICY).otherwise(TableView.UNCONSTRAINED_RESIZE_POLICY));
         grid.add(constrainedColumnPolicy, 0, row++);
-        
+
         CheckBox fixedCellSize = new CheckBox("Set Fixed Cell Size");
         table.fixedCellSizeProperty().bind(Bindings.when(fixedCellSize.selectedProperty()).then(40).otherwise(0));
         grid.add(fixedCellSize, 0, row++);
-        
+
         CheckBox showTableMenuButton = new CheckBox("Show Table Menu Button");
         table.tableMenuButtonVisibleProperty().bind(showTableMenuButton.selectedProperty());
         grid.add(showTableMenuButton, 0, row++);
-        
+
         CheckBox showData = new CheckBox("Show Data");
         showData.setSelected(true);
         showData.selectedProperty().addListener((obs, ov, nv) -> {
             table.setItems(nv ? data : null);
         });
         grid.add(showData, 0, row++);
-        
+
         CheckBox sortedList = new CheckBox("Use SortedList");
         sortedList.selectedProperty().addListener((obs, ov, nv) -> {
             if (nv) {
@@ -194,10 +193,10 @@ public class HelloTableView2 extends ControlsFXSample {
             }
         });
         grid.add(sortedList, 0, row++);
-        
+
         return new TitledPane("TableView Options", grid);
     }
-     
+
     private Node buildTableView2Control() {
         final GridPane grid = new GridPane();
         grid.setHgap(5);
@@ -212,30 +211,30 @@ public class HelloTableView2 extends ControlsFXSample {
             table.setColumnFixingEnabled(nv);
         });
         grid.add(columnFixing, 0, row++);
-        
+
         CheckBox rowFixing = new CheckBox("Row Fixing Enabled");
         rowFixing.setSelected(true);
         rowFixing.selectedProperty().addListener((obs, ov, nv) -> {
             table.setRowFixingEnabled(nv);
         });
         grid.add(rowFixing, 0, row++);
-        
+
         CheckBox southFilter = new CheckBox("Use SouthNode");
         southFilter.selectedProperty().addListener((obs, ov, nv) -> {
             table.setupSouth(nv);
         });
         grid.add(southFilter, 0, row++);
-        
+
         CheckBox blendSouthFilter = new CheckBox("Blend SouthNode");
         blendSouthFilter.disableProperty().bind(southFilter.selectedProperty().not());
         table.southHeaderBlendedProperty().bind(blendSouthFilter.selectedProperty());
         blendSouthFilter.setSelected(true);
         grid.add(blendSouthFilter, 0, row++);
-        
+
         CheckBox showRowHeader = new CheckBox("Show Row Header");
         table.rowHeaderVisibleProperty().bind(showRowHeader.selectedProperty());
         grid.add(showRowHeader, 0, row++);
-        
+
         CheckBox rowFactory = new CheckBox("Use Row Header Factory");
         rowFactory.disableProperty().bind(showRowHeader.selectedProperty().not());
         rowFactory.selectedProperty().addListener((obs, ov, nv) -> {
@@ -243,27 +242,27 @@ public class HelloTableView2 extends ControlsFXSample {
                 TableColumn2<Person, Number> tc = new TableColumn2<>();
                 tc.setContextMenu(new ContextMenu(new MenuItem("Corner")));
                 tc.setGraphic(new Rectangle(20, 20, Color.ORANGE));
-                
+
                 Label labelTotal = new Label("Total #1:");
                 HBox box = new HBox(labelTotal);
                 box.setAlignment(Pos.CENTER_RIGHT);
                 box.setPadding(new Insets(0, 5, 0, 0));
                 tc.setSouthNode(box);
-                
+
                 tc.setCellValueFactory(p -> p.getValue().getTotalSum());
                 tc.setCellFactory(p -> new TableCell<Person, Number>() {
                     private final HBox box;
                     private final Circle circle;
                     private final Label label;
                     {
-                        circle = new Circle(5); 
-                        label = new Label(); 
-                        box = new HBox(10, circle, label); 
+                        circle = new Circle(5);
+                        label = new Label();
+                        box = new HBox(10, circle, label);
                     }
-                    
+
                     @Override
                     protected void updateItem(Number item, boolean empty) {
-                        super.updateItem(item, empty); 
+                        super.updateItem(item, empty);
                         if (item != null && ! empty) {
                             setText(null);
                             circle.setFill(getIndex() % 5 == 0 ? Color.RED : Color.BLUE);
@@ -285,25 +284,25 @@ public class HelloTableView2 extends ControlsFXSample {
             table.setRowHeaderWidth(nv ? 100 : 40);
         });
         grid.add(rowFactory, 0, row++);
-        
+
         return new TitledPane("TableView2 Options", grid);
     }
-    
+
     private ObservableList<Person> generateData(int numberOfPeople) {
-        ObservableList<Person> persons = FXCollections.observableArrayList(e -> 
+        ObservableList<Person> persons = FXCollections.observableArrayList(e ->
                 new Observable[]{ e.firstNameProperty(), e.lastNameProperty() });
-        
+
         for (int i = 0; i < numberOfPeople; i++) {
             final LocalDate date = LocalDate.of(1910 + new Random().nextInt(100), 1+i%11, 1+i%29);
-            persons.add(new Person("First Name:  " + i%20, "Last Name: " + i%10,  Period.between(date, LocalDate.now()).getYears(), 
+            persons.add(new Person("First Name:  " + i%20, "Last Name: " + i%10,  Period.between(date, LocalDate.now()).getYears(),
                     "City: " + i%3, i%10 != 0, date));
         }
 
         return persons;
     }
-    
+
     private class TableView2Sample extends TableView2<Person> {
-        
+
         private final TableColumn2<Person, String> firstName = new TableColumn2<>("First Name");
         private final TableColumn2<Person, String> lastName = new TableColumn2<>("Last Name");
         private final TableColumn2<Person, String> city = new TableColumn2<>("City");
@@ -313,7 +312,7 @@ public class HelloTableView2 extends ControlsFXSample {
         private HBox boxFirstName, boxLastName;
 
         public TableView2Sample() {
-        
+
             firstName.setCellValueFactory(p -> p.getValue().firstNameProperty());
             firstName.setCellFactory(ComboBox2TableCell.forTableColumn("Name 1", "Name 2", "Name 3", "Name 4"));
             firstName.setPrefWidth(110);
@@ -347,7 +346,7 @@ public class HelloTableView2 extends ControlsFXSample {
                 public String toString(LocalDate date) {
                     if (date == null) {
                         return "" ;
-                    } 
+                    }
                     return DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).format(date);
                 }
 
@@ -374,13 +373,13 @@ public class HelloTableView2 extends ControlsFXSample {
 
             Label labelFirstName = new Label("#1:");
             labelFirstName.textProperty().bind(Bindings.createStringBinding(() ->
-                "#1: " + getItems().stream().filter(t -> t.getFirstName().contains("1")).count(), getItems()));
+                    "#1: " + getItems().stream().filter(t -> t.getFirstName().contains("1")).count(), getItems()));
             boxFirstName = new HBox(10, labelFirstName);
             boxFirstName.setAlignment(Pos.CENTER);
 
             Label labelLastName = new Label("#1:");
             labelLastName.textProperty().bind(Bindings.createStringBinding(() ->
-                "#1: " + getItems().stream().filter(t -> t.getLastName().contains("1")).count(), getItems()));
+                    "#1: " + getItems().stream().filter(t -> t.getLastName().contains("1")).count(), getItems()));
             boxLastName = new HBox(10, labelLastName);
             boxLastName.setAlignment(Pos.CENTER);
 
@@ -411,13 +410,13 @@ public class HelloTableView2 extends ControlsFXSample {
                 final MenuItem menuItemAdd = new MenuItem("Add new Person");
                 menuItemAdd.setOnAction(e -> data.add(new Person()));
                 rowCM.getItems().addAll(menuItem, menuItemAdd);
-                return rowCM; 
+                return rowCM;
             });
 
             getFixedColumns().setAll(fullNameColumn);
             getFixedRows().setAll(0, 1, 2);
         }
-        
+
         public void setupSouth(boolean useSouthNode) {
             if (useSouthNode) {
                 firstName.setSouthNode(boxFirstName);
@@ -511,7 +510,7 @@ public class HelloTableView2 extends ControlsFXSample {
             this.age.set(age);
         }
 
-        public Person (String firstName, String lastName, Integer age, 
+        public Person (String firstName, String lastName, Integer age,
                        String city, boolean active, LocalDate birthday){
             this.firstName.set(firstName);
             this.lastName.set(lastName);
@@ -523,8 +522,8 @@ public class HelloTableView2 extends ControlsFXSample {
 
         @Override
         public String toString() {
-            return "Person{" + "firstName=" + firstName.get() + ", lastName=" + lastName.get() + 
-                    ", age=" + age.get() + ", city=" + city.get() + ", active=" + active.get() + 
+            return "Person{" + "firstName=" + firstName.get() + ", lastName=" + lastName.get() +
+                    ", age=" + age.get() + ", city=" + city.get() + ", active=" + active.get() +
                     ", birthday=" + birthday.get() + '}';
         }
 
@@ -540,7 +539,7 @@ public class HelloTableView2 extends ControlsFXSample {
 
         public IntegerProperty getTotalSum() {
             IntegerProperty sum = new SimpleIntegerProperty();
-            sum.bind(Bindings.createIntegerBinding(() -> getNumberOf(getFirstName()) + getNumberOf(getLastName()) + getNumberOf(getCity()), 
+            sum.bind(Bindings.createIntegerBinding(() -> getNumberOf(getFirstName()) + getNumberOf(getLastName()) + getNumberOf(getCity()),
                     firstName, lastName, city));
             return sum;
         }

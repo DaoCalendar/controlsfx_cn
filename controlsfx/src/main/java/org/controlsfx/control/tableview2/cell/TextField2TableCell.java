@@ -64,7 +64,7 @@ public class TextField2TableCell<S, T> extends TextFieldTableCell<S, T> {
     /**
      * Provides a {@link TextField} that allows editing of the cell content when
      * the cell is double-clicked, or when
-     * {@link TableView#edit(int, javafx.scene.control.TableColumn)} is called.
+     * {@link TableView#edit(int, TableColumn)} is called.
      * This method will only  work on {@link TableColumn} instances which are of
      * type String.
      *
@@ -82,7 +82,7 @@ public class TextField2TableCell<S, T> extends TextFieldTableCell<S, T> {
     /**
      * Provides a {@link TextField} that allows editing of the cell content when
      * the cell is double-clicked, or when
-     * {@link TableView#edit(int, javafx.scene.control.TableColumn) } is called.
+     * {@link TableView#edit(int, TableColumn) } is called.
      * This method will work  on any {@link TableColumn} instance, regardless of
      * its generic type. However, to enable this, a {@link StringConverter} must
      * be provided that will convert the given String (from what the user typed
@@ -230,7 +230,7 @@ public class TextField2TableCell<S, T> extends TextFieldTableCell<S, T> {
             TableView<S> table = getTableView();
             if (table != null) {
                 TableColumn<S, T> column = getTableColumn();
-                TableColumn.CellEditEvent<S, T> event = new TableColumn.CellEditEvent<>(table, 
+                TableColumn.CellEditEvent<S, T> event = new TableColumn.CellEditEvent<>(table,
                         new TablePosition<>(table, getIndex(), column), TableColumn.editCommitEvent(), item);
                 Event.fireEvent(column, event);
             }

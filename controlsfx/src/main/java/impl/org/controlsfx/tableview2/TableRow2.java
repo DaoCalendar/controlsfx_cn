@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013, 2018 ControlsFX
+ * Copyright (c) 2013, 2020 ControlsFX
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,7 @@ import javafx.scene.input.MouseEvent;
 import org.controlsfx.control.tableview2.TableView2;
 
 /**
- * 
+ *
  * The tableRow which will holds the TableView2 cells.
  * @param <S> The type of the objects contained within the {@link TableView2} items list.
  */
@@ -54,7 +54,7 @@ public class TableRow2<S> extends TableRow<S> {
      **************************************************************************/
     private final TableView2<S> tableView;
     private final TableView2Skin<S> skin;
-    
+
     /**
      * When the row is fixed, it may have a shift from its original position
      * which we need in order to layout the cells properly and also for the
@@ -72,21 +72,21 @@ public class TableRow2<S> extends TableRow<S> {
     public TableRow2(TableView2<S> tableView) {
         super();
         this.tableView = tableView;
-        
-        
+
+
         if (tableView.getParent() != null && tableView.getParent() instanceof RowHeader) {
             parentTableView = ((RowHeader) tableView.getParent()).getParentTableView();
         }
 
         skin = (TableView2Skin<S>) (parentTableView != null ? parentTableView : tableView).getSkin();
-        
+
         /**
          *  FIXME Bug? When re-using the row, it should re-compute the prefHeight and not
          *  keep the old value.
          */
         this.indexProperty().addListener(weakPrefHeightListener);
         this.visibleProperty().addListener(weakPrefHeightListener);
-        
+
         /**
          * When the height is changing elsewhere, we need to update ourself if necessary.
          */
@@ -121,32 +121,32 @@ public class TableRow2<S> extends TableRow<S> {
     void removeCell(TableCell<S, ?> gc) {
         getChildren().remove(gc);
     }
-    
+
     /** {@inheritDoc} */
     @Override protected double computePrefHeight(double width) {
         return skin.getRowHeight(getIndex());
     }
-    
+
     /** {@inheritDoc} */
     @Override protected double computeMinHeight(double width) {
         return skin.getRowHeight(getIndex());
     }
-    
+
     /** {@inheritDoc} */
     @Override protected Skin<?> createDefaultSkin() {
         return new TableRow2Skin<>(tableView, this);
     }
-    
+
     private final InvalidationListener setPrefHeightListener = (Observable o) -> setRowHeight(computePrefHeight(-1));
-    
+
     private final WeakInvalidationListener weakPrefHeightListener = new WeakInvalidationListener(setPrefHeightListener);
-    
+
     public void setRowHeight(double height) {
         runOnFXThread(() -> setHeight(height));
-        
+
         setPrefHeight(height);
     }
-    
+
     private final EventHandler<MouseEvent> dragDetectedEventHandler = event -> {
         if (event.getTarget().getClass().equals(TableRow2.class) && event.getPickResult().getIntersectedNode() != null
                 && event.getPickResult().getIntersectedNode().getClass().equals(TableCell.class)) {
@@ -155,7 +155,7 @@ public class TableRow2<S> extends TableRow<S> {
     };
 
     private final WeakEventHandler<MouseEvent> weakDragHandler = new WeakEventHandler(dragDetectedEventHandler);
-   
+
     private void runOnFXThread(final Runnable runnable) {
         if (Platform.isFxApplicationThread()) {
             runnable.run();

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014, 2015, ControlsFX
+ * Copyright (c) 2014, 2020, ControlsFX
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,7 +26,7 @@
  */
 package org.controlsfx.tools;
 
-import java.util.Iterator;
+import java.util.List;
 
 import javafx.scene.Node;
 import javafx.stage.PopupWindow;
@@ -46,12 +46,11 @@ public class Utils {
         if (owner == null) {
             Window window = null;
             // lets just get the focused stage and show the dialog in there
-            @SuppressWarnings("deprecation")
-            Iterator<Window> windows = Window.impl_getWindows();
-            while (windows.hasNext()) {
-                window = windows.next();
+            List<Window> windows = Window.getWindows();
+            for (Window w : windows) {
+                window = w;
                 if (window.isFocused() && !(window instanceof PopupWindow)) {
-                    break;
+                    return window;
                 }
             }
             return window;

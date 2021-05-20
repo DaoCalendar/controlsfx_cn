@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013, 2018 ControlsFX
+ * Copyright (c) 2013, 2020 ControlsFX
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,9 +27,6 @@
 package impl.org.controlsfx.tableview2;
 
 
-import static impl.org.controlsfx.tableview2.SortUtils.SortEndedEvent.SORT_ENDED_EVENT;
-import static impl.org.controlsfx.tableview2.SortUtils.SortStartedEvent.SORT_STARTED_EVENT;
-import java.util.stream.Collectors;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
@@ -49,10 +46,15 @@ import org.controlsfx.control.tableview2.FilteredTableView;
 import org.controlsfx.control.tableview2.TableColumn2;
 import org.controlsfx.control.tableview2.TableView2;
 
+import java.util.stream.Collectors;
+
+import static impl.org.controlsfx.tableview2.SortUtils.SortEndedEvent.SORT_ENDED_EVENT;
+import static impl.org.controlsfx.tableview2.SortUtils.SortStartedEvent.SORT_STARTED_EVENT;
+
 /**
  * Display the row header on the left of the cells (view), where the user can
  * display any content via {@link TableView2#getRowHeader() }.
- * 
+ *
  * @param <S> The type of the objects contained within the TableView2 items list.
  */
 public class RowHeader<S> extends StackPane {
@@ -66,9 +68,9 @@ public class RowHeader<S> extends StackPane {
     private TableView2Skin<S> skin;
     private TableView2Skin<S> innerSkin;
     private double tableColumnHeaderHeight;
-    
+
     private final TableView2<S> innerTableView;
-    
+
     /**
      * This represents the RowHeader width. It's the total amount of space
      * used by the RowHeader {@link TableView2#getRowHeaderWidth() }.
@@ -81,7 +83,7 @@ public class RowHeader<S> extends StackPane {
 
     private ListChangeListener<Integer> tableSelectionListener;
     private ListChangeListener<Integer> rowHeaderSelectionListener;
-    
+
     private boolean sorting;
 
     /**
@@ -122,7 +124,7 @@ public class RowHeader<S> extends StackPane {
      */
     void init(final TableView2Skin<S> skin, TableHeaderRow2 tableColumnHeader) {
         this.skin = skin;
-        
+
         // Adjust position upon TableHeaderRow2 height
         tableColumnHeader.heightProperty().addListener((obs, oldHeight, newHeight) -> {
             tableColumnHeaderHeight = newHeight.doubleValue();
@@ -130,12 +132,12 @@ public class RowHeader<S> extends StackPane {
         });
 
         // Clip property to stay within bounds
-        clip = new Rectangle(getRowHeaderWidth(), 
+        clip = new Rectangle(getRowHeaderWidth(),
                 snapSize(tableView.getHeight() - tableView.snappedTopInset() - tableView.snappedBottomInset()));
         clip.relocate(snappedTopInset(), snappedLeftInset());
         clip.setSmooth(false);
-        clip.heightProperty().bind(Bindings.createDoubleBinding(() -> 
-                tableView.getHeight() - tableView.snappedTopInset() - tableView.snappedBottomInset(), 
+        clip.heightProperty().bind(Bindings.createDoubleBinding(() ->
+                tableView.getHeight() - tableView.snappedTopInset() - tableView.snappedBottomInset(),
                 tableView.heightProperty()));
         clip.widthProperty().bind(innerRowHeaderWidth);
         RowHeader.this.setClip(clip);
@@ -157,7 +159,7 @@ public class RowHeader<S> extends StackPane {
             innerTableView.refresh();
             innerTableView.requestLayout();
         });
-        
+
         // install tableColumn
         tableView.getVisibleLeafColumns().addListener((Observable o) -> {
             if (tableView.getVisibleLeafColumns().isEmpty() != innerTableView.getColumns().isEmpty()) {
@@ -166,16 +168,16 @@ public class RowHeader<S> extends StackPane {
         });
         tableView.rowHeaderProperty().addListener((Observable o) -> setContent());
         setContent();
-        
+
         // sync items between tableViews
         innerTableView.itemsProperty().bind(tableView.itemsProperty());
-        
+
         // sync fixed rows
         innerTableView.getFixedRows().setAll(tableView.getFixedRows().stream().collect(Collectors.toList()));
         tableView.getFixedRows().addListener((Observable o) -> {
             innerTableView.getFixedRows().setAll(tableView.getFixedRows().stream().collect(Collectors.toList()));
         });
-        
+
         // sync scrolling between tableViews
         innerTableView.skinProperty().addListener(new InvalidationListener() {
             @Override
@@ -185,7 +187,7 @@ public class RowHeader<S> extends StackPane {
                 innerTableView.skinProperty().removeListener(this);
             }
         });
-        
+
         // sync selection between two selection models
         innerTableView.getSelectionModel().selectionModeProperty().bind(tableView.getSelectionModel().selectionModeProperty());
         rowHeaderSelectionListener = (ListChangeListener.Change<? extends Integer> c) -> {
@@ -212,7 +214,7 @@ public class RowHeader<S> extends StackPane {
                 innerTableView.getSelectionModel().getSelectedIndices().addListener(rowHeaderSelectionListener);
             }
         };
-        
+
         final ChangeListener<Boolean> focusListener = (obs, ov, nv) -> {
             if (! tableView.isFocused() && ! innerTableView.isFocused()) {
                 tableView.setStyle("-fx-selection-bar-non-focused: lightgrey;");
@@ -224,10 +226,10 @@ public class RowHeader<S> extends StackPane {
         };
         innerTableView.getSelectionModel().getSelectedIndices().addListener(rowHeaderSelectionListener);
         skin.getSelectedRows().addListener(tableSelectionListener);
-        
-        // When sorting, the external TableView fires add/remove selection events. 
-        // These change the innerTableView selected rows. To avoid firing new 
-        // events back to the TableView, we have to remove rowHeaderSelectionListener 
+
+        // When sorting, the external TableView fires add/remove selection events.
+        // These change the innerTableView selected rows. To avoid firing new
+        // events back to the TableView, we have to remove rowHeaderSelectionListener
         // while sorting.
         tableView.addEventHandler(SortEvent.ANY, e -> {
             if (e != null && SORT_STARTED_EVENT.equals(e.getEventType())) {
@@ -245,14 +247,14 @@ public class RowHeader<S> extends StackPane {
                 innerTableView.getSelectionModel().getSelectedIndices().addListener(rowHeaderSelectionListener);
             }
         });
-        
+
         //sync south blend
         innerTableView.southHeaderBlendedProperty().bind(tableView.southHeaderBlendedProperty());
 
         // keep focus on both tableViews
         tableView.focusedProperty().addListener(focusListener);
         innerTableView.focusedProperty().addListener(focusListener);
-        
+
     }
 
     public double getRowHeaderWidth() {
@@ -274,7 +276,7 @@ public class RowHeader<S> extends StackPane {
     public TableView2<S> getParentTableView() {
         return tableView;
     }
-    
+
     /** {@inheritDoc} */
     @Override protected void layoutChildren() {
         if (tableView.isRowHeaderVisible()) {
@@ -283,20 +285,20 @@ public class RowHeader<S> extends StackPane {
             if (getChildren().isEmpty()) {
                 getChildren().setAll(innerTableView);
             }
-            
+
             if (innerSkin != null) {
                 TableHeaderRow2 tableHeaderRow2 = innerSkin.getTableHeaderRow2();
                 tableHeaderRow2.setPrefHeight(tableColumnHeaderHeight);
             }
             final ScrollBar hBar = skin.getHBar();
-            double hBarHeight = hBar.isVisible() && tableView.getItems() != null && ! tableView.getItems().isEmpty() ? 
+            double hBarHeight = hBar.isVisible() && tableView.getItems() != null && ! tableView.getItems().isEmpty() ?
                     snapSize(hBar.getHeight()) : 0;
-            innerTableView.resizeRelocate(x, 0, innerRowHeaderWidth.get(), tableView.getHeight() - hBarHeight - 
+            innerTableView.resizeRelocate(x, 0, innerRowHeaderWidth.get(), tableView.getHeight() - hBarHeight -
                     tableView.snappedTopInset() - tableView.snappedBottomInset());
             if (! innerTableView.getColumns().isEmpty()) {
                 innerTableView.getColumns().get(0).setPrefWidth(innerRowHeaderWidth.get());
             }
-            
+
             Label label;
             if (getChildren().size() == 1) {
                 label = new Label("");
@@ -306,7 +308,7 @@ public class RowHeader<S> extends StackPane {
                 label = (Label) getChildren().get(1);
             }
 
-            label.resizeRelocate(snappedLeftInset(), getHeight() - snappedBottomInset() - hBarHeight, 
+            label.resizeRelocate(snappedLeftInset(), getHeight() - snappedBottomInset() - hBarHeight,
                     innerRowHeaderWidth.get(), hBarHeight);
         } else {
             getChildren().clear();
@@ -325,7 +327,7 @@ public class RowHeader<S> extends StackPane {
             innerTableView.getColumns().add(getDefaultTableColumn());
         }
     }
-    
+
     private TableColumn2<S, String> getDefaultTableColumn() {
         TableColumn2<S, String> column;
         if (tableView instanceof FilteredTableView) {
@@ -339,7 +341,7 @@ public class RowHeader<S> extends StackPane {
         } else {
             column = new TableColumn2<>();
         }
-        
+
         column.setSortable(false);
         column.setCellValueFactory(p -> new SimpleStringProperty(String.valueOf(p.getTableView().getItems().indexOf(p.getValue()) + 1)));
         return column;
@@ -351,11 +353,11 @@ public class RowHeader<S> extends StackPane {
         scrollBar.setMin(scrollBarParent.getMin());
         scrollBar.setMax(scrollBarParent.getMax());
         scrollBar.valueProperty().bindBidirectional(scrollBarParent.valueProperty());
-        
+
         // If adjustPixels is called in one tableView, sync the other one
         innerSkin.getFlow().adjustedPixelsProperty().bindBidirectional(skin.getFlow().adjustedPixelsProperty());
     }
-    
+
     /**
      * *************************************************************************
      * * Listeners * *

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018 ControlsFX
+ * Copyright (c) 2018, 2020 ControlsFX
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,6 @@ import java.time.format.FormatStyle;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import static javafx.application.Application.launch;
 import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -102,7 +101,7 @@ public class HelloFilteredTableView extends ControlsFXSample {
     public static void main(String[] args) {
         launch(args);
     }
-    
+
     @Override
     public String getSampleName() {
         return "FilteredTableView";
@@ -119,7 +118,7 @@ public class HelloFilteredTableView extends ControlsFXSample {
 
     @Override
     public String getControlStylesheetURL() {
-        return "/org/controlsfx/samples/tableview2.css";
+        return "/org/controlsfx/tableview2/tableview2.css";
     }
 
     @Override
@@ -128,7 +127,7 @@ public class HelloFilteredTableView extends ControlsFXSample {
         centerPane = new StackPane(table);
         return centerPane;
     }
-    
+
     @Override
     public Node getControlPanel() {
         return new VBox(10, buildCommonControl(), buildTableView2Control(), buildFilteredTableViewControl());
@@ -157,34 +156,34 @@ public class HelloFilteredTableView extends ControlsFXSample {
         table.editableProperty().bind(tableEditingEnabled.selectedProperty());
         tableEditingEnabled.setSelected(true);
         grid.add(tableEditingEnabled, 0, row++);
-        
+
         CheckBox columnsEditingEnabled = new CheckBox("Columns Editing Enabled");
         columnsEditingEnabled.selectedProperty().addListener((obs, ov, nv) -> {
             table.getVisibleLeafColumns().forEach(column -> column.setEditable(nv));
         });
         columnsEditingEnabled.setSelected(true);
         grid.add(columnsEditingEnabled, 0, row++);
-        
+
         CheckBox cellSelectionEnabled = new CheckBox("Cell Selection Enabled");
         table.getSelectionModel().cellSelectionEnabledProperty().bind(cellSelectionEnabled.selectedProperty());
         grid.add(cellSelectionEnabled, 0, row++);
-        
+
         CheckBox multipleSelection = new CheckBox("Multiple Selection");
         table.getSelectionModel().selectionModeProperty().bind(Bindings.when(multipleSelection.selectedProperty()).then(SelectionMode.MULTIPLE).otherwise(SelectionMode.SINGLE));
         grid.add(multipleSelection, 0, row++);
-        
+
         CheckBox constrainedColumnPolicy = new CheckBox("Constrained Column Policy");
         table.columnResizePolicyProperty().bind(Bindings.when(constrainedColumnPolicy.selectedProperty()).then(TableView.CONSTRAINED_RESIZE_POLICY).otherwise(TableView.UNCONSTRAINED_RESIZE_POLICY));
         grid.add(constrainedColumnPolicy, 0, row++);
-        
+
         CheckBox fixedCellSize = new CheckBox("Set Fixed Cell Size");
         table.fixedCellSizeProperty().bind(Bindings.when(fixedCellSize.selectedProperty()).then(40).otherwise(0));
         grid.add(fixedCellSize, 0, row++);
-        
+
         CheckBox showTableMenuButton = new CheckBox("Show Table Menu Button");
         table.tableMenuButtonVisibleProperty().bind(showTableMenuButton.selectedProperty());
         grid.add(showTableMenuButton, 0, row++);
-        
+
         CheckBox showData = new CheckBox("Show Data");
         CheckBox sortedList = new CheckBox("Use SortedList");
         showData.setSelected(true);
@@ -200,7 +199,7 @@ public class HelloFilteredTableView extends ControlsFXSample {
             }
         });
         grid.add(showData, 0, row++);
-        
+
         sortedList.selectedProperty().addListener((obs, ov, nv) -> {
             if (nv) {
                 FilteredTableView.configureForFiltering(table, data);
@@ -209,10 +208,10 @@ public class HelloFilteredTableView extends ControlsFXSample {
             }
         });
         grid.add(sortedList, 0, row++);
-        
+
         return new TitledPane("TableView Options", grid);
     }
-     
+
     private Node buildTableView2Control() {
         final GridPane grid = new GridPane();
         grid.setHgap(5);
@@ -227,24 +226,24 @@ public class HelloFilteredTableView extends ControlsFXSample {
             table.setColumnFixingEnabled(nv);
         });
         grid.add(columnFixing, 0, row++);
-        
+
         CheckBox rowFixing = new CheckBox("Row Fixing Enabled");
         rowFixing.setSelected(true);
         rowFixing.selectedProperty().addListener((obs, ov, nv) -> {
             table.setRowFixingEnabled(nv);
         });
         grid.add(rowFixing, 0, row++);
-        
+
         CheckBox blendSouthFilter = new CheckBox("Blend SouthNode");
         blendSouthFilter.disableProperty().bind(southVisible.not());
         table.southHeaderBlendedProperty().bind(blendSouthFilter.selectedProperty());
         blendSouthFilter.setSelected(true);
         grid.add(blendSouthFilter, 0, row++);
-        
+
         CheckBox showRowHeader = new CheckBox("Show Row Header");
         table.rowHeaderVisibleProperty().bind(showRowHeader.selectedProperty());
         grid.add(showRowHeader, 0, row++);
-        
+
         CheckBox rowFactory = new CheckBox("Use Row Header Factory");
         rowFactory.disableProperty().bind(showRowHeader.selectedProperty().not());
         rowFactory.selectedProperty().addListener((obs, ov, nv) -> {
@@ -259,21 +258,21 @@ public class HelloFilteredTableView extends ControlsFXSample {
                         table.resetFilter();
                     }
                 });
-                
+
                 tc.setCellValueFactory(p -> p.getValue().getTotalSum());
                 tc.setCellFactory(p -> new TableCell<Person, Number>() {
                     private final HBox box;
                     private final Circle circle;
                     private final Label label;
                     {
-                        circle = new Circle(5); 
-                        label = new Label(); 
-                        box = new HBox(10, circle, label); 
+                        circle = new Circle(5);
+                        label = new Label();
+                        box = new HBox(10, circle, label);
                     }
-                    
+
                     @Override
                     protected void updateItem(Number item, boolean empty) {
-                        super.updateItem(item, empty); 
+                        super.updateItem(item, empty);
                         if (item != null && ! empty) {
                             setText(null);
                             circle.setFill(getIndex() % 5 == 0 ? Color.RED : Color.BLUE);
@@ -295,10 +294,10 @@ public class HelloFilteredTableView extends ControlsFXSample {
             table.setRowHeaderWidth(nv ? 100 : 40);
         });
         grid.add(rowFactory, 0, row++);
-        
+
         return new TitledPane("TableView2 Options", grid);
     }
-        
+
     private Node buildFilteredTableViewControl() {
         final GridPane grid = new GridPane();
         grid.setHgap(5);
@@ -309,7 +308,7 @@ public class HelloFilteredTableView extends ControlsFXSample {
         final Label label = new Label("Select the columns filter editor from the options below");
         label.setWrapText(true);
         grid.add(label, 0, row++);
-        
+
         ToggleGroup filterGroup = new ToggleGroup();
         RadioButton popupFilter = new RadioButton("Use PopupFilter");
         popupFilter.setSelected(true);
@@ -319,10 +318,10 @@ public class HelloFilteredTableView extends ControlsFXSample {
         southFilter.setToggleGroup(filterGroup);
         grid.add(southFilter, 0, row++);
         filterGroup.selectedToggleProperty().addListener((obs, ov, nv) -> table.setupFilter(nv == southFilter));
-        
+
         return new TitledPane("FilteredTableView Options", grid);
     }
-    
+
     private class FilteredTableViewSample extends FilteredTableView<Person> {
 
         private final FilteredTableColumn<Person, String> firstName = new FilteredTableColumn<>("First Name");
@@ -398,7 +397,7 @@ public class HelloFilteredTableView extends ControlsFXSample {
                 public String toString(LocalDate date) {
                     if (date == null) {
                         return "" ;
-                    } 
+                    }
                     return DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).format(date);
                 }
 
@@ -447,13 +446,13 @@ public class HelloFilteredTableView extends ControlsFXSample {
             editorColor.getFilterEditor().setConverter(new StringConverter<Color>() {
                 @Override
                 public String toString(Color object) {
-                    return object != null && colors.indexOf(object) > -1 ? 
+                    return object != null && colors.indexOf(object) > -1 ?
                             scolors.get(colors.indexOf(object)) : editorColor.getFilterEditor().getEditor().getText();
                 }
 
                 @Override
                 public Color fromString(String string) {
-                    if (string == null || string.isEmpty()) 
+                    if (string == null || string.isEmpty())
                         return Color.CADETBLUE;
                     try {
                         if (Color.web(string) != null) {
@@ -473,7 +472,7 @@ public class HelloFilteredTableView extends ControlsFXSample {
             final CheckMenuItem miFirstName = new CheckMenuItem("Filter " + firstName.getText());
             firstName.predicateProperty().addListener(o -> miFirstName.setSelected(firstName.getPredicate() != null));
             miFirstName.setOnAction(e ->
-                firstName.setPredicate(miFirstName.isSelected() ? p -> p.contains("1") : null));
+                    firstName.setPredicate(miFirstName.isSelected() ? p -> p.contains("1") : null));
             final Menu menuFirstName = new Menu("Filter");
             menuFirstName.getItems().addAll(miFirstName);
             cm.getItems().addAll(menuFirstName);
@@ -482,8 +481,8 @@ public class HelloFilteredTableView extends ControlsFXSample {
             cm = ActionUtils.createContextMenu(Arrays.asList(new ColumnFixAction(lastName)));
             final CheckMenuItem miLastName = new CheckMenuItem("Filter " + lastName.getText());
             lastName.predicateProperty().addListener(o -> miLastName.setSelected(lastName.getPredicate() != null));
-            miLastName.setOnAction(e -> 
-                lastName.setPredicate(miLastName.isSelected() ? p -> p.contains("2") : null));
+            miLastName.setOnAction(e ->
+                    lastName.setPredicate(miLastName.isSelected() ? p -> p.contains("2") : null));
 
             final Menu menuLastName = new Menu("Filter");
             menuLastName.getItems().addAll(miLastName);
@@ -507,8 +506,8 @@ public class HelloFilteredTableView extends ControlsFXSample {
             cm = ActionUtils.createContextMenu(Arrays.asList(new ColumnFixAction(birthday), ActionUtils.ACTION_SEPARATOR));
             final CheckMenuItem miBirthday = new CheckMenuItem("Filter " + birthday.getText());
             birthday.predicateProperty().addListener(o -> miBirthday.setSelected(birthday.getPredicate() != null));
-            miBirthday.setOnAction(e -> 
-                birthday.setPredicate(miBirthday.isSelected() ? p -> p.isAfter(LocalDate.of(1950, 1, 1)) : null));
+            miBirthday.setOnAction(e ->
+                    birthday.setPredicate(miBirthday.isSelected() ? p -> p.isAfter(LocalDate.of(1950, 1, 1)) : null));
 
             final Menu menuBirthday = new Menu("Filter");
             menuBirthday.getItems().addAll(miBirthday);
@@ -546,14 +545,14 @@ public class HelloFilteredTableView extends ControlsFXSample {
                     data.add(new Person());
                 });
                 rowCM.getItems().add(menuItemAdd);
-                return rowCM; 
+                return rowCM;
             });
 
             getFixedColumns().setAll(fullNameColumn);
             getFixedRows().setAll(0, 1, 2);
-            
+
         }
-        
+
         public void setupFilter(boolean southFilter) {
             if (southFilter) {
                 southNodeFilterAction();
@@ -620,14 +619,14 @@ public class HelloFilteredTableView extends ControlsFXSample {
             color.setOnFilterAction(e -> popupColorFilter.showPopup());
         }
     }
-    
+
     private ObservableList<Person> generateData(int numberOfPeople) {
         ObservableList<Person> persons = FXCollections.observableArrayList(e -> new Observable[]{ e.lastNameProperty() });
         List<Color> colors = Arrays.asList(Color.CADETBLUE, Color.CHARTREUSE, Color.CHOCOLATE, Color.CORAL, Color.CORNSILK, Color.CORNFLOWERBLUE);
-        
+
         for (int i = 0; i < numberOfPeople; i++) {
             final LocalDate date = LocalDate.of(1910 + new Random().nextInt(100), 1+i%11, 1+i%29);
-            persons.add(new Person("First Name:  " + i%20, "Last Name: " + i%10,  Period.between(date, LocalDate.now()).getYears(), 
+            persons.add(new Person("First Name:  " + i%20, "Last Name: " + i%10,  Period.between(date, LocalDate.now()).getYears(),
                     "City: " + i%3, i%10 != 0, date, colors.get(new Random().nextInt(colors.size()))));
         }
 
@@ -729,7 +728,7 @@ public class HelloFilteredTableView extends ControlsFXSample {
             return color;
         }
 
-        public Person (String firstName, String lastName, Integer age, 
+        public Person (String firstName, String lastName, Integer age,
                        String city, boolean active, LocalDate birthday, Color color){
             this.firstName.set(firstName);
             this.lastName.set(lastName);
@@ -742,8 +741,8 @@ public class HelloFilteredTableView extends ControlsFXSample {
 
         @Override
         public String toString() {
-            return "Person{" + "firstName=" + firstName.get() + ", lastName=" + lastName.get() + 
-                    ", age=" + age.get() + ", city=" + city.get() + ", active=" + active.get() + 
+            return "Person{" + "firstName=" + firstName.get() + ", lastName=" + lastName.get() +
+                    ", age=" + age.get() + ", city=" + city.get() + ", active=" + active.get() +
                     ", birthday=" + birthday.get() + ", color=" + color.get() + '}';
         }
 
@@ -759,7 +758,7 @@ public class HelloFilteredTableView extends ControlsFXSample {
 
         public IntegerProperty getTotalSum() {
             IntegerProperty sum = new SimpleIntegerProperty();
-            sum.bind(Bindings.createIntegerBinding(() -> getNumberOf(getFirstName()) + getNumberOf(getLastName()) + getNumberOf(getCity()), 
+            sum.bind(Bindings.createIntegerBinding(() -> getNumberOf(getFirstName()) + getNumberOf(getLastName()) + getNumberOf(getCity()),
                     firstName, lastName, city));
             return sum;
         }

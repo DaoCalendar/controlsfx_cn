@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2013, 2018 ControlsFX
+ * Copyright (c) 2013, 2020 ControlsFX
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,17 +26,15 @@
  */
 package impl.org.controlsfx.tableview2;
 
-import javafx.scene.control.TableColumnBase;
-
-import com.sun.javafx.scene.control.skin.NestedTableColumnHeader;
-import com.sun.javafx.scene.control.skin.TableColumnHeader;
-import com.sun.javafx.scene.control.skin.TableViewSkinBase;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumnBase;
+import javafx.scene.control.skin.NestedTableColumnHeader;
+import javafx.scene.control.skin.TableColumnHeader;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Rectangle;
@@ -48,12 +46,15 @@ import org.controlsfx.control.tableview2.TableView2;
 public class NestedTableColumnHeader2 extends NestedTableColumnHeader {
 
     int lastColumnResized = -1;
-    private final TableView2Skin<?> skin;
-    private final TableView2<?> tableView;
+    private TableView2Skin<?> skin;
+    private TableView2<?> tableView;
     
-    public NestedTableColumnHeader2(TableViewSkinBase<?, ?, ?, ?, ?, ?> skin, TableColumnBase<?, ?> tc) {
-        super(skin, tc);
-        this.skin = (TableView2Skin<?>) skin;
+    public NestedTableColumnHeader2(TableColumnBase<?, ?> tc) {
+        super(tc);
+    }
+    
+    private void init() {
+        this.skin = (TableView2Skin<?>) getTableSkin();
         this.tableView = (TableView2<?>) skin.getSkinnable();
         /**
          * Resolve https://bitbucket.org/controlsfx/controlsfx/issue/395
@@ -63,23 +64,22 @@ public class NestedTableColumnHeader2 extends NestedTableColumnHeader {
             this.skin.hBarValue.clear();
         });
         
-        getColumnHeaders().addListener((Observable o) -> 
+        getColumnHeaders().addListener((Observable o) ->
             this.skin.getTableHeaderRow2().updateVisibleLeafColumnHeaders());
-        tableView.getVisibleLeafColumns().addListener((Observable o) -> 
+        tableView.getVisibleLeafColumns().addListener((Observable o) ->
             this.skin.getTableHeaderRow2().updateVisibleLeafColumnHeaders());
     }
 
     
     /** {@inheritDoc} */
     @Override protected TableColumnHeader createTableColumnHeader(final TableColumnBase col) {
-        TableViewSkinBase<?,?,?,?,?,TableColumnBase<?,?>> tableViewSkin = getTableViewSkin();
-        if (col.getColumns().isEmpty()) {
-            final TableColumnHeader tableColumnHeader = new TableColumnHeader(tableViewSkin, col);
+        if (col == null || col.getColumns().isEmpty() || col == getTableColumn())  {
+            final TableColumnHeader tableColumnHeader = new TableColumnHeader(col);
             addMousePressedListener(tableColumnHeader);
             addMouseReleasedListener(tableColumnHeader);
             return tableColumnHeader;
         } else {
-            final NestedTableColumnHeader2 rootHeader = new NestedTableColumnHeader2(tableViewSkin, col);
+            final NestedTableColumnHeader2 rootHeader = new NestedTableColumnHeader2(col);
             final ObservableList<Node> rootChildren = rootHeader.getChildren();
             rootChildren.addListener(new InvalidationListener() {
                 @Override
@@ -107,6 +107,10 @@ public class NestedTableColumnHeader2 extends NestedTableColumnHeader {
      * We want ColumnHeader to be fixed when we freeze some columns
      */
     public void layoutFixedColumns() {
+        if (skin == null && tableView == null) {
+            init();
+        }
+        
         if (skin == null || getChildren().isEmpty()) {
             return;
         }
@@ -154,7 +158,7 @@ public class NestedTableColumnHeader2 extends NestedTableColumnHeader {
         // remove drag rectangles from left border as sometimes they are placed 
         // at the origin and it doesn't make sense allowing resizing the row 
         // header or the first column from the left side
-        getChildren().removeIf(r -> (r instanceof Rectangle) && 
+        getChildren().removeIf(r -> (r instanceof Rectangle) &&
                 (r.getLayoutX() < 1 || (tableView.getParent() instanceof RowHeader)));
     }
     
@@ -167,7 +171,7 @@ public class NestedTableColumnHeader2 extends NestedTableColumnHeader {
         tableColumnHeader.addEventFilter(MouseEvent.MOUSE_RELEASED, e -> {
             TableColumnHeader reorderingRegion = skin.getTableHeaderRow2().getReorderingRegion();
             if (tableColumnHeader.equals(reorderingRegion)) {
-                tableColumnHeader.getTableColumn().impl_setReorderable(true);
+                tableColumnHeader.getTableColumn().setReorderable(true);
             }
             if (e.getButton() != MouseButton.PRIMARY) {
                 // consume event to avoid sorting after right-click

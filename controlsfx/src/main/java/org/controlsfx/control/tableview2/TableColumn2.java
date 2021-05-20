@@ -35,7 +35,7 @@ import javafx.scene.control.TableColumn;
  * An extension of {@link TableColumn} that allows adding a South Header Node.
  * 
  * The south header is an extended region below the regular column header, and where 
- * a node can be laid out with {@link #setSouthNode(javafx.scene.Node) }.
+ * a node can be laid out with {@link #setSouthNode(Node) }.
  * This node can be used for displaying a filter editor, a column totalizer or 
  * other purposes.
  * 
